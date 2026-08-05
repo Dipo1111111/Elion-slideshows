@@ -1,0 +1,279 @@
+/* Elion landing page. The landing is NOT locked by DESIGN.md, so layout,
+   composition and motion are free. Palette stays black/blue/white: page
+   #08080A, one accent #3B82F6 used as LIGHT (glows, emission, thin marks)
+   never as surface fills, white for display type and actions. Fonts:
+   Schibsted Grotesk display, Inter Tight body, DM Sans numbers. */
+
+.elion-lp {
+  color-scheme: dark;
+  overflow-x: clip;
+  background: #08080A;
+}
+
+/* ---------- word-mask reveal primitives ---------- */
+.word-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em; /* keeps descenders (g/y/p) from clipping */
+}
+.word-inner {
+  display: inline-block;
+  will-change: transform;
+}
+.word-glow {
+  text-shadow: 0 0 42px rgba(59, 130, 246, 0.55);
+}
+
+/* ---------- hero ambience: blue as light, never fill ---------- */
+.hero-glow-bg {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  width: min(112vmin, 940px);
+  height: min(112vmin, 940px);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05) 45%, transparent 70%);
+  filter: blur(30px);
+  pointer-events: none;
+}
+.app-halo {
+  position: absolute;
+  inset: -20% -12% -26% -12%;
+  border-radius: 50%;
+  background: radial-gradient(50% 55% at 50% 46%, rgba(59, 130, 246, 0.16), rgba(59, 130, 246, 0.05) 55%, transparent 74%);
+  filter: blur(44px);
+  pointer-events: none;
+}
+
+/* ---------- generation pulse + floating hero chips ---------- */
+.pulse-dot {
+  position: relative;
+}
+.pulse-dot::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: #3b82f6;
+  animation: pulse 1.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.chip-float {
+  animation: chip-float 3.2s ease-in-out infinite;
+}
+@keyframes chip-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* ---------- cycling output word ---------- */
+.cycling-word {
+  display: inline-block;
+  animation: word-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes word-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.55em);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- hero chapter index (left rail) ---------- */
+.chapter-index {
+  position: absolute;
+  left: clamp(18px, 3.2vw, 44px);
+  bottom: 120px;
+  z-index: 5;
+}
+
+/* ---------- scroll cue ---------- */
+.cue-line {
+  position: relative;
+  display: block;
+  width: 1px;
+  height: 40px;
+  background: #1e2028;
+  overflow: hidden;
+}
+.cue-line::after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 0;
+  width: 1px;
+  height: 10px;
+  background: #3b82f6;
+  animation: cue 2.1s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+@keyframes cue {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(46px);
+    opacity: 0;
+  }
+}
+
+/* ---------- marquee band ---------- */
+.marquee {
+  overflow: hidden;
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 26s linear infinite;
+}
+.marquee-group {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ---------- film grain + vignette ---------- */
+.grain {
+  position: fixed;
+  inset: -50%;
+  z-index: 60;
+  width: 200%;
+  height: 200%;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  animation: grain 0.9s steps(4) infinite;
+}
+@keyframes grain {
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-1.5%, 1.5%);
+  }
+  50% {
+    transform: translate(1.5%, -1%);
+  }
+  75% {
+    transform: translate(-1%, -1.5%);
+  }
+  100% {
+    transform: translate(1%, 1%);
+  }
+}
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  background: radial-gradient(120% 95% at 50% 0%, transparent 68%, rgba(0, 0, 0, 0.32) 100%);
+}
+
+/* ---------- cursor light (desktop pointers only) ---------- */
+.cursor-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 460px;
+  height: 460px;
+  margin: -230px 0 0 -230px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.13), rgba(59, 130, 246, 0.045) 38%, transparent 70%);
+  pointer-events: none;
+  z-index: 55;
+  will-change: transform;
+}
+@media (pointer: coarse) {
+  .cursor-glow {
+    display: none;
+  }
+}
+
+/* ---------- footer giant word ---------- */
+.giant-mask {
+  display: block;
+  overflow: hidden;
+}
+.giant-word {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(3rem, 16vw, 15rem);
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+.giant-word:hover {
+  color: #3b82f6;
+  text-shadow: 0 0 80px rgba(59, 130, 246, 0.45);
+}
+
+/* ---------- skip link ---------- */
+.skip-link {
+  position: fixed;
+  top: -60px;
+  left: 12px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #000000;
+  font-size: 13px;
+  font-weight: 700;
+  transition: top 0.2s ease;
+}
+.skip-link:focus {
+  top: 12px;
+}
+
+/* ---------- reduced motion: every loop gets a static fallback ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+  .grain {
+    animation: none;
+  }
+  .cue-line::after {
+    animation: none;
+    opacity: 0;
+  }
+  .cycling-word {
+    animation: none;
+  }
+  .pulse-dot::after {
+    animation: none;
+  }
+  .chip-float {
+    animation: none;
+  }
+}

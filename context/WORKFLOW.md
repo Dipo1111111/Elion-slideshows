@@ -13,6 +13,14 @@ Captured 2026-08-02 from the naming/branding session. These are the user's expli
 6. **Extract the chosen design** into the **global CSS** (and shadcn theme tokens / Tailwind config).
 7. **Then** build the real app from `BUILD_PLAN.md` and `PROGRESS_TRACKER.md`.
 
+## Design-first gate (ask before ANY build)
+
+Before planning or building anything new, ask the user:
+
+> **Do you have a design for this already, or should we apply the design-exploration approach?**
+
+The exploration approach = read the specific skill files (`/impeccable` + `/ui-ux-pro-max`), generate a batch of completely distinct UI mockups, the user picks one, and that chosen design drives everything forward (extracted to global CSS + theme tokens). Never skip the question and never invent a design ad-hoc during implementation.
+
 ## Hard rules
 
 - **Clean-room:** SlideSmith = feature reference ONLY. Never copy its code, its prompts verbatim, or its images. Reference lives at `Documents/slideshow gen software/SlideSmith`.

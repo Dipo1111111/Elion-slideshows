@@ -73,7 +73,7 @@ No code. Branding/planning session only. The clean-room SaaS core value was defi
 
 ### Current state
 
-- Core value locked: "Your story, told in your voice."
+- Core value locked: "Your story, told in your voice." → **SUPERSEDED 2026-08-02** (user rejected — didn't describe the software). Replacement "AI carousels, ready to post." also rejected same day (too vague). Current: **"Writes your carousel for you."**
 - 14 brainstormed names on the table (Rondo/Ballad/Griot recommended). **User has NOT picked yet.**
 - NONE of the 14 have been verified. An earlier 25-name list (Naiad, Notus, Theia, Leto, Dione, Ione, Coeus, Mneme, Erebus, Vesper, Ballad, Psalm, Ochre, Rime, Zinnia, Tilia, Yarrow, Pavo, Morpho, Vireo, Corfu, Samos, Paros, Milos, Chios) is also unverified and was never picked from.
 - Names VERIFIED TAKEN this session (do not re-propose): Mythos, Cluely, Fable, Ichor, Pythia, Lethe, Hymn, Aeolus, Delos, Erato, Umber, Sonnet, Chora, Voyd, Fayble, Lyrik, Vyvid, Lumyn, Klio, Tayle, Embyr, Ambre, Havyn, Tyche, Kismet, Boreas, Eunoia, Ischia, Giglio, Sepia, Sylph, Eurus, Alder.

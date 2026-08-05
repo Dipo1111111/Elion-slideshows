@@ -1,0 +1,426 @@
+/* ==========================================================================
+   Elion theme tokens — extracted from the locked Synthover design
+   (src/components/design1/synthover.tsx, 2026-08-04).
+
+   Design language:
+   - Deep matte black page #08080A. Containers are TRANSPARENT with a hairline
+     border (never filled, no navy). #0C0D10 is the inset for media and
+     controls only (slide thumbs, input fills), never a card surface.
+   - One accent = blue #3B82F6, used as translucent glass only: /20 fills,
+     /25 hairlines, never solid except tiny data marks (usage meter fill,
+     selection check, active dot).
+   - Two action/state languages: WHITE is the action language (primary CTA is
+     white glass: bg white/20 + border white/30 + white ink). BLUE is the
+     state language (status, selection, links, focus ring).
+   - Modals are the only elevated layer.
+   - Radius per role (constant): full = pills (primary buttons, chips, tabs,
+     dots), xl = cards and modals, lg = controls, inputs, nav rows, thumbs.
+   - Fonts: Schibsted Grotesk (display/headers), Inter Tight (body + whole
+     sidebar), DM Sans (numbers/counters). Lucide icons at strokeWidth 1.5.
+   - DARK-ONLY. There is no light theme. :root carries the dark values so the
+     app renders dark even without a .dark class; .dark aliases the same.
+
+   Token layers:
+   - Design-role tokens (below): the descriptive vocabulary from the mockup
+     (page, inset, ink, sub, faint, dim, hairline, accent, action, danger).
+     Use these as Tailwind utilities: bg-page, border-hairline, text-ink-faint,
+     bg-accent-glass, bg-action-glass, text-danger.
+   - shadcn semantic tokens (--background, --foreground, --card, ...): the
+     standard shadcn mapping for components generated from components.json.
+     They reference the design-role tokens so there is one source of truth.
+   ========================================================================== */
+
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/schibsted-grotesk";
+@import "@fontsource-variable/inter-tight";
+@import "@fontsource-variable/dm-sans";
+@import "@fontsource-variable/jetbrains-mono";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --font-heading: var(--font-display);
+    --font-sans: 'Inter Tight Variable', system-ui, sans-serif;
+    --font-display: 'Schibsted Grotesk Variable', 'Inter Tight Variable', sans-serif;
+    --font-num: 'DM Sans Variable', 'Inter Tight Variable', sans-serif; /* numbers and counters */
+    --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    /* Design-role colors (Synthover vocabulary) */
+    --color-page: var(--page);
+    --color-inset: var(--inset);
+    --color-ink: var(--ink);
+    --color-ink-sub: var(--ink-sub);
+    --color-ink-faint: var(--ink-faint);
+    --color-ink-dim: var(--ink-dim);
+    --color-hairline: var(--hairline);
+    --color-hairline-strong: var(--hairline-strong);
+    --color-hairline-quiet: var(--hairline-quiet);
+    --color-accent: var(--accent);
+    --color-accent-hover: var(--accent-hover);
+    --color-accent-glass: var(--accent-glass);
+    --color-accent-hairline: var(--accent-hairline);
+    --color-action-glass: var(--action-glass);
+    --color-action-hairline: var(--action-hairline);
+    --color-danger: var(--danger);
+    --color-brand: var(--accent); /* one accent — blue, state language */
+
+    /* shadcn semantic mapping */
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent-role: var(--accent-role);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* Dark-only theme. Values taken verbatim from the Synthover mockup. */
+:root {
+    /* ── Design-role tokens (the mockup's vocabulary) ─────────────── */
+    --page: #08080A;          /* deep matte black page */
+    --inset: #0C0D10;         /* media + control inset (thumbs, input fills) */
+    --ink: #E5E7EB;           /* strong body ink */
+    --ink-sub: #D1D5DB;       /* secondary body */
+    --ink-faint: #9CA0A8;     /* muted text, 5.9:1 on page */
+    --ink-dim: #6E737B;       /* dim metadata, icon idle */
+    --hairline: #1E2028;      /* card border (the card surface) */
+    --hairline-strong: #2E3140; /* secondary button border */
+    --hairline-quiet: #16171D;  /* sidebar border */
+    --accent: #3B82F6;        /* one accent, blue */
+    --accent-hover: #6FA1FF;  /* blue hover (links, nav text) */
+    --accent-glass: rgba(59, 130, 246, 0.2);   /* /20 fill */
+    --accent-hairline: rgba(59, 130, 246, 0.25); /* /25 hairline */
+    --action-glass: rgba(255, 255, 255, 0.2);  /* white primary action fill */
+    --action-hairline: rgba(255, 255, 255, 0.3); /* white primary action border */
+    --danger: #F4877E;        /* soft red ink on dark */
+
+    /* ── shadcn semantic tokens (reference the design roles) ───────── */
+    --background: var(--page);
+    --foreground: var(--ink);
+    --card: var(--page);          /* transparent + hairline, never a fill */
+    --card-foreground: var(--ink);
+    --popover: var(--page);       /* modal surface; shadow elevates */
+    --popover-foreground: var(--ink);
+    --primary: var(--action-glass);   /* primary action = white glass */
+    --primary-foreground: #ffffff;
+    --secondary: var(--inset);
+    --secondary-foreground: var(--ink);
+    --muted: var(--inset);
+    --muted-foreground: var(--ink-faint);
+    --accent-role: var(--accent-glass); /* blue glass surface for state */
+    --accent: var(--accent-glass);
+    --accent-foreground: #ffffff;
+    --destructive: var(--danger);
+    --border: var(--hairline);
+    --input: #1F212B;             /* input hairline */
+    --ring: var(--accent);
+    --chart-1: var(--accent);
+    --chart-2: var(--accent-hover);
+    --chart-3: var(--ink-faint);
+    --chart-4: var(--ink-dim);
+    --chart-5: #3A3F47;
+    --radius: 0.625rem;           /* lg controls / inputs / nav rows */
+
+    /* Sidebar: page surface, quiet hairline. Active = text + icon go blue,
+       no background (the accent carries state, not a fill). */
+    --sidebar: var(--page);
+    --sidebar-foreground: var(--ink);
+    --sidebar-primary: #ffffff;
+    --sidebar-primary-foreground: var(--page);
+    --sidebar-accent: transparent;
+    --sidebar-accent-foreground: var(--accent);
+    --sidebar-border: var(--hairline-quiet);
+    --sidebar-ring: var(--accent);
+}
+
+/* Alias for the dark class (shadcn ThemeProvider / sidebar may apply it).
+   Dark-only: identical values, no light theme exists. */
+.dark {
+    --page: #08080A;
+    --inset: #0C0D10;
+    --ink: #E5E7EB;
+    --ink-sub: #D1D5DB;
+    --ink-faint: #9CA0A8;
+    --ink-dim: #6E737B;
+    --hairline: #1E2028;
+    --hairline-strong: #2E3140;
+    --hairline-quiet: #16171D;
+    --accent: #3B82F6;
+    --accent-hover: #6FA1FF;
+    --accent-glass: rgba(59, 130, 246, 0.2);
+    --accent-hairline: rgba(59, 130, 246, 0.25);
+    --action-glass: rgba(255, 255, 255, 0.2);
+    --action-hairline: rgba(255, 255, 255, 0.3);
+    --danger: #F4877E;
+
+    --background: var(--page);
+    --foreground: var(--ink);
+    --card: var(--page);
+    --card-foreground: var(--ink);
+    --popover: var(--page);
+    --popover-foreground: var(--ink);
+    --primary: var(--action-glass);
+    --primary-foreground: #ffffff;
+    --secondary: var(--inset);
+    --secondary-foreground: var(--ink);
+    --muted: var(--inset);
+    --muted-foreground: var(--ink-faint);
+    --accent-role: var(--accent-glass);
+    --accent: var(--accent-glass);
+    --accent-foreground: #ffffff;
+    --destructive: var(--danger);
+    --border: var(--hairline);
+    --input: #1F212B;
+    --ring: var(--accent);
+    --chart-1: var(--accent);
+    --chart-2: var(--accent-hover);
+    --chart-3: var(--ink-faint);
+    --chart-4: var(--ink-dim);
+    --chart-5: #3A3F47;
+    --radius: 0.625rem;
+
+    --sidebar: var(--page);
+    --sidebar-foreground: var(--ink);
+    --sidebar-primary: #ffffff;
+    --sidebar-primary-foreground: var(--page);
+    --sidebar-accent: transparent;
+    --sidebar-accent-foreground: var(--accent);
+    --sidebar-border: var(--hairline-quiet);
+    --sidebar-ring: var(--accent);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    }
+  body {
+    @apply bg-background text-foreground font-sans;
+    }
+  /* Display headings: even line breaks. (impeccable typeset rule) */
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+  /* Long prose: avoid orphans. */
+  p {
+    text-wrap: pretty;
+  }
+  /* Subtle blue selection, not the default grey. */
+  ::selection {
+    background: rgba(59, 130, 246, 0.3);
+    color: #ffffff;
+  }
+}
+
+/* Entrance for auth / landing panels. Rise with an expo ease-out. Instant
+   under prefers-reduced-motion; content is never gated on the animation. */
+@keyframes elion-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .elion-rise {
+    animation: elion-rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+/* Dashboard card-grid entrance: each card rises in with a small sibling
+   stagger (capped so a long grid never waits on a long delay). Reduced
+   motion disables it; the grid is never gated on the animation firing. */
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .card-enter {
+    animation: card-enter 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(var(--i, 0) * 60ms);
+  }
+}
+/* ---------- Shared motion utilities ----------
+   Product register: 150-300ms, expo ease-out, never bounce. Every one of
+   these is gated on prefers-reduced-motion; nothing gates content on the
+   animation firing.
+   view-enter uses "backwards" fill so the rise transform fully reverts when
+   the animation ends: a lingering transform on the route wrapper would trap
+   the fixed-position editor modal in its own stacking context. */
+@keyframes view-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .view-enter {
+    animation: view-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .fade-in {
+    animation: fade-in 0.3s ease-out both;
+  }
+}
+
+@keyframes modal-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes modal-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .modal-backdrop {
+    animation: modal-backdrop-in 0.2s ease-out both;
+  }
+  .modal-panel {
+    animation: modal-panel-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+/* Modal exits: the mirror of the entrance. Played via useAnimatedClose, which
+   keeps the modal mounted for ~200ms while these run, then unmounts. Reduced
+   motion skips them (the modal still closes on the same short delay). */
+@keyframes modal-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes modal-panel-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .modal-backdrop-out {
+    animation: modal-backdrop-out 0.2s ease-out both;
+  }
+  .modal-panel-out {
+    animation: modal-panel-out 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@keyframes tab-fade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tab-fade {
+    animation: tab-fade 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+/* Brand switcher dropdown: rises from its top-right anchor with an expo
+   ease-out, rows follow with a tiny 20ms stagger. Reduced motion collapses
+   to a plain fade; content is never gated on the animation firing. */
+@keyframes dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes dropdown-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .dropdown-in {
+    animation: dropdown-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+    transform-origin: top right;
+  }
+  .dropdown-row {
+    animation: dropdown-row-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(var(--i, 0) * 20ms);
+  }
+}
