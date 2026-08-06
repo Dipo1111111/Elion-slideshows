@@ -2,9 +2,9 @@
 
 > Tick boxes as work completes. Header shows current milestone + next action. Phases must be done in order.
 
-**Current milestone:** **Backend live + auth verified (2026-08-05)**; **Creator/Studio billing wired (2026-08-06)**: three-tier pricing (Free · Creator $19/$190 · Studio $49/$490) adopted from PRICING.md, Lemon Squeezy products + variants created by user and wired in `.env` + `server/lemon.js` (webhook flips `creator`/`studio`), schema ALTER run by user, Google OAuth provider enabled by user. Docs pricing copy swept (2026-08-06). Remaining: `APP_URL` + deploy, then Playwright verification (BUILD_PLAN §16), then Phase 11 hardening.
+**Current milestone:** **DEPLOYED + LIVE 2026-08-06**: https://elion-ix26.onrender.com (auto-deploy via Render Deploy Hook). Pinterest pulls curated (resolution + dedupe gate, parallel downloads, search expansion), Library delete animation fixed, **Phase 11 security hardening COMPLETE** (all 11 items: security headers, CORS allowlist, race-safe counters, input caps, pinimg host gate, hono patched). Remaining before launch: Playwright E2E, plan margin math, `elion.ai` domain check, trademark clearance, Lemon Squeezy store finish (publish products, webhook callback → Render, payout, live test).
 **Last updated:** 2026-08-06
-**Next action:** Deploy: set `APP_URL` + target host (Render per plan), then `npm run dev` end-to-end + Playwright (BUILD_PLAN §16), then Phase 11 security hardening.
+**Next action:** Playwright E2E (BUILD_PLAN §16) — signup → brain → generate → edit → swap background → export (watermark logic) → upgrade via webhook → clean export → limits (403/429). Then plan margin math, domain check, trademark, Lemon Squeezy store finish.
 
 ---
 
@@ -16,8 +16,8 @@
 - [x] Write `AGENTS.md` (behavioral contract — no inline CSS, file size limits, anti-slop rules)
 - [x] Write `BUILD_PLAN.md`
 - [x] Write this `PROGRESS_TRACKER.md`
-- [ ] Fresh git repo in elion + initial commit
-- [ ] Report back to user (stop — no code yet)
+- [x] Fresh git repo in elion + initial commit (repo `Elion-slideshows`, many commits; public for Render auto-deploy)
+- [x] Report back to user (stop — no code yet)
 
 ## Phase C — Design exploration (AFTER planning; user-led)
 
@@ -86,7 +86,7 @@
 - [x] Vite + React 19 + TS + Tailwind + shadcn wired (from C2)
 - [x] Express skeleton: `/api/health`, json body limit 50mb, SPA fallback in prod
 - [x] `npm run dev` boots Vite + server together; `npm run build`; `npm start` — verified
-- [ ] Supabase schema applied (profiles, projects, queue, RLS) + profile/project auto-create on login
+- [x] Supabase schema applied (profiles, projects, queue, RLS) + profile/project auto-create on login (live; auto-create trigger verified during auth testing)
 
 ## Phase 1 — Design tokens
 
@@ -97,7 +97,7 @@
 
 ## Phase 2 — Auth
 
-- [ ] Supabase project created + auth email/password enabled (user)
+- [x] Supabase project created + auth email/password enabled (user) + Google OAuth (2026-08-06)
 - [x] `src/lib/supabase.ts` client (anon key, VITE_ env) — exists, wire to `/api/me`
 - [x] Signup + login forms (`/auth`)
 - [x] Server JWT verify middleware (`server/auth.js`, HS256 via SUPABASE_JWT_SECRET)
@@ -164,10 +164,10 @@
 ## Phase 10 — Deploy + verification
 
 - [x] `vercel.json` created (SPA rewrites to `/index.html`, `/api/*` passthrough, security headers). NOTE: Vercel serves the static build only; the Express API in `server/` needs serverless functions or a separate host for `/api` to work in production. Current `npm start` (Node + `server/`) is the full-stack path.
-- [ ] Render web service (Node, `npm run build` + `npm start`) (user)
-- [ ] Env vars set in Render (all from BUILD_PLAN §14) (user)
-- [ ] `/api/health` green on Render
-- [ ] Playwright end-to-end: signup → brain → generate → edit → swap background → export (watermark logic) → upgrade via webhook → clean export → limits (403/429)
+- [x] Render web service (Node, `npm run build` + `npm start`) (user) — service `elion`, live 2026-08-06
+- [x] Env vars set in Render (all from BUILD_PLAN §14) (user)
+- [x] `/api/health` green on Render + auto-deploy via Render Deploy Hook → GitHub webhook
+- [ ] **Playwright end-to-end** (BUILD_PLAN §16): signup → brain → generate → edit → swap background → export (watermark logic) → upgrade via webhook → clean export → limits (403/429) — last major pre-launch verification
 
 ## Phase 11 — Security hardening (before launch)
 
@@ -190,8 +190,10 @@
 - [x] **Pricing tiers (2026-08-06):** three-tier structure adopted from PRICING.md. Creator $19/mo or $190/yr (100 gens/mo, 3 projects); Studio $49/mo or $490/yr (500 gens/mo, 10 projects). `pro` kept as a legacy alias for `creator` in code and DB. Caps configurable via `LIMIT_MONTHLY_GEN` / `LIMIT_MONTHLY_GEN_STUDIO` / `LIMITS.projects`.
 - [ ] **Plan margin math (before launch, user 2026-08-04):** compute real per-generation cost (OpenCode LLM + Apify scrape amortized across cached backgrounds + storage/bandwidth) and validate the $19 / $190 / $49 / $490 pricing leaves margin; lower the cap if not. PRD §6
 - [x] **Google OAuth (done, user 2026-08-06):** Google provider enabled in Supabase (Auth → Providers → Google) with Client ID/Secret from Google Cloud Console. Frontend already wired (`supabase.auth.signInWithOAuth`).
-- [x] **Lemon Squeezy wired (2026-08-06):** Creator + Studio variants, store URL, and webhook secret in `.env`; webhook maps variant → plan (`server/lemon.js`), `/api/upgrade-url` takes `tier` + `annual`, BillingView shows three tiers. REMAINING: point the webhook callback at the real server host after deploy.
+- [x] **Lemon Squeezy wired (2026-08-06):** Creator + Studio variants, store URL, and webhook secret in `.env`; webhook maps variant → plan (`server/lemon.js`), `/api/upgrade-url` takes `tier` + `annual`, BillingView shows three tiers. Endpoint verified live via a signed test webhook (flipped a real user's plan). Store-side completion is the open item below.
 - [x] **Supabase ALTER (done, user 2026-08-06):** live `profiles` table now accepts `plan in ('free','creator','studio','pro')`; `supabase/schema.sql` already updated.
+- [ ] **Lemon Squeezy store finish (user, in LS dashboard):** point webhook callback URL at `https://elion-ix26.onrender.com/api/lemon/webhook`; publish Creator + Studio products (checkout live); set up payout account; run a real checkout → webhook → plan-flip test. Backend is done and verified.
+- [ ] **Plan margin math (before launch, user 2026-08-04):** compute real per-generation cost (OpenCode LLM + Apify scrape amortized across cached backgrounds + storage/bandwidth) and validate the $19 / $190 / $49 / $490 pricing leaves margin; lower the cap if not. PRD §6
 - [ ] **Domain check** `elion.ai` availability — method to be agreed (user rejected Bash RDAP + WebFetch-whois)
 - [ ] Trademark clearance for "Elion" in content-creation category (informational; brand owns the lane)
 - [ ] Post-launch: Claude Haiku model swap, stock background packs, server-side watermark (v2)
