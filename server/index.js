@@ -53,7 +53,13 @@ const ALLOWED_ORIGINS = new Set(
 )
 app.use((req, res, next) => {
   const origin = req.headers.origin
-  if (origin && !ALLOWED_ORIGINS.has(origin)) {
+  if (origin) {
+    // True same-origin (Origin == this server's own host) is always allowed,
+    // independent of APP_URL config. The dev allowlist above covers the Vite
+    // proxy case (browser origin differs from the host Express sees).
+    const proto = req.headers['x-forwarded-proto'] || (req.socket.encrypted ? 'https' : 'http')
+    if (origin === `${proto}://${req.headers.host}`) return next()
+    if (ALLOWED_ORIGINS.has(origin)) return next()
     return res.status(403).json({ error: 'Cross-origin request denied.' })
   }
   next()

@@ -86,13 +86,16 @@ export async function chargeGeneration(userId, plan) {
       monthly_gens: reset ? 1 : profile.monthly_gens + (plan !== 'free' ? 1 : 0),
       month_start: reset ? now.toISOString() : profile.month_start,
     }
+    // Guard on the two counters we actually increment. month_start is not a
+    // guard: a reset flips monthly_gens to 1, which the monthly_gens guard
+    // already catches, and timestamptz equality through PostgREST is the one
+    // round-trip that could silently mismatch and 500 every generation.
     const { data: updated, error } = await db
       .from('profiles')
       .update(patch)
       .eq('id', userId)
       .eq('total_gens', profile.total_gens)
       .eq('monthly_gens', profile.monthly_gens)
-      .eq('month_start', profile.month_start)
       .select('id')
       .maybeSingle()
     if (error) throw new HttpError(500, 'Could not update usage.')
