@@ -424,3 +424,12 @@
     animation-delay: calc(var(--i, 0) * 20ms);
   }
 }
+
+/* In-page anchor links (landing nav) glide instead of jump. Gated on reduced
+   motion so users who prefer instant jumps keep them. The app shell scrolls in
+   its own container, so this only affects the landing page. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}

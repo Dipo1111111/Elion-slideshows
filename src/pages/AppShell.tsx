@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import Sidebar from '@/components/Sidebar'
+import Onboarding from '@/components/Onboarding'
 import { supabase } from '@/lib/supabase'
 import { DEMO_SESSION } from '@/lib/demo'
 import { GenerateModal } from '@/components/GenerateModal'
@@ -38,6 +39,7 @@ export default function AppShell() {
         </main>
       </div>
       <GenerateModal />
+      <Onboarding />
       <Toaster theme="dark" position="bottom-right" />
     </div>
   )

@@ -6,14 +6,14 @@
 // Save persists via PUT /api/projects/:id.
 // FLAGGED: the Edit button + wizard are a functional necessity, not in the mockup.
 import { useEffect, useState } from 'react'
-import { BookOpen, Pencil, Plus, X } from 'lucide-react'
+import { BookOpen, Check, Pencil, Plus, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { api, ApiError } from '@/lib/api'
 import { BRAND_NAME } from '@/lib/brand'
 import { useAnimatedClose } from '@/lib/useAnimatedClose'
 import { useMe } from '@/lib/me'
 import type { Brain, BrainKey } from '@/lib/types'
-import { FOCUS, Field, MintButton, QuietButton, TextArea, TextInput } from '@/components/primitives'
+import { FOCUS, Field, MintButton, QuietButton, Shimmer, TextArea, TextInput } from '@/components/primitives'
 import { ProjectSwitcher } from '@/components/ProjectSwitcher'
 
 const BRAIN_FIELDS: { key: BrainKey; label: string; long?: boolean }[] = [
@@ -43,6 +43,23 @@ const GOAL_CHOICES = ['Grow the account', 'Sell digital products', 'Promote an a
 
 const STEP_TITLES = ['Your app', 'The niche', 'Your audience', 'Your goal', 'Your voice']
 
+// Guided empty state: three short previews of what the wizard asks, so a new
+// user sees the value of the setup before starting it.
+const EMPTY_STEPS = [
+  {
+    title: 'Name your niche',
+    body: 'The topic every slideshow is about, like fitness without a gym.',
+  },
+  {
+    title: 'Describe your audience',
+    body: 'Who it is for and what bothers them. That is what hooks the first slide.',
+  },
+  {
+    title: 'Pick your voice',
+    body: 'Warm, direct, or funny. The model mirrors it on every slide.',
+  },
+]
+
 const STEP_HELP = [
   'The purpose of your app, or what your account is about. Every slideshow sells this.',
   'The category it lives in. This is the topic every slideshow is about.',
@@ -63,12 +80,22 @@ interface WizardDraft {
 }
 
 export default function BrandVoiceView() {
-  const { activeProject, refreshMe, setActiveProjectId } = useMe()
+  const { activeProject, refreshMe, setActiveProjectId, meLoading } = useMe()
   const [editing, setEditing] = useState(false)
   const [creating, setCreating] = useState(false)
   const brain = activeProject?.brain ?? {}
+  // A project may exist without a saved Brain (created by onboarding, then
+  // skipped). The read-only grid would render blank fields, so treat it as
+  // "not set up" and keep the empty state until a real Brain is persisted.
+  const hasBrain = Boolean(activeProject?.brain?.appDescription || activeProject?.brain?.niche)
 
   const createBrand = async () => {
+    // A project already exists but its Brain is empty. Reuse it and open the
+    // wizard on top instead of stacking a second project.
+    if (activeProject) {
+      setEditing(true)
+      return
+    }
     if (creating) return
     setCreating(true)
     try {
@@ -83,6 +110,21 @@ export default function BrandVoiceView() {
     }
   }
 
+  // Skeleton while /me loads so the empty state never flashes over a working
+  // account (the glitch: empty state for ~2s, then a flip to blank fields).
+  if (meLoading) {
+    return (
+      <div className="mx-auto w-full max-w-[720px] px-6 py-8">
+        <div className="mb-7">
+          <Shimmer className="h-7 w-48" />
+          <Shimmer className="mt-3 h-4 w-full max-w-[380px]" />
+        </div>
+        <Shimmer className="h-44 w-full" />
+        <Shimmer className="mt-5 h-32 w-full" />
+      </div>
+    )
+  }
+
   return (
     <div className="mx-auto w-full max-w-[720px] px-6 py-8">
       <header className="mb-7 flex items-start justify-between gap-4">
@@ -94,7 +136,7 @@ export default function BrandVoiceView() {
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <ProjectSwitcher />
-          {activeProject && (
+          {hasBrain && (
             <QuietButton icon={Pencil} onClick={() => setEditing(true)}>
               Edit
             </QuietButton>
@@ -102,7 +144,7 @@ export default function BrandVoiceView() {
         </div>
       </header>
 
-      {activeProject ? (
+      {hasBrain ? (
         <>
           <section className="rounded-xl border border-[#1E2028] p-6">
             <p className="mb-4 font-display text-[13px] font-bold text-white">Your brand</p>
@@ -122,18 +164,34 @@ export default function BrandVoiceView() {
           </section>
         </>
       ) : (
-        <section className="flex flex-col items-center justify-center rounded-xl border border-[#1E2028] px-6 py-14 text-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
+        <section className="rounded-xl border border-[#1E2028] px-6 py-12 text-center sm:px-10">
+          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
             <BookOpen className="h-5 w-5 text-white" strokeWidth={1.5} />
           </span>
-          <h2 className="mt-4 font-display text-[17px] font-bold text-white">Set up your brand</h2>
-          <p className="mt-1.5 max-w-[380px] text-[13px] leading-relaxed text-[#9CA0A8]">
-            Tell {BRAND_NAME} what you're building, who it is for, and how you sound. Every slideshow is written from
-            that.
+          <h2 className="mt-4 font-display text-[19px] font-bold text-white">Set up your brand</h2>
+          <p className="mx-auto mt-2 max-w-[420px] text-[13px] leading-relaxed text-[#9CA0A8]">
+            Your Brand is the memory {BRAND_NAME} writes from. Answer five quick questions once, and every slideshow
+            comes out in your voice.
           </p>
-          <MintButton icon={Plus} onClick={() => void createBrand()} disabled={creating} className="mt-6">
+
+          <div className="mx-auto mt-8 max-w-[460px] text-left">
+            {EMPTY_STEPS.map((s) => (
+              <div key={s.title} className="flex items-start gap-3 border-t border-[#1E2028] py-4 first:border-t-0">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#3B82F6]/20">
+                  <Check className="h-3 w-3 text-[#3B82F6]" strokeWidth={1.5} />
+                </span>
+                <div>
+                  <p className="text-[13.5px] font-semibold text-white">{s.title}</p>
+                  <p className="mt-0.5 text-[12px] leading-relaxed text-[#9CA0A8]">{s.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <MintButton icon={Plus} onClick={() => void createBrand()} disabled={creating} className="mt-8">
             {creating ? 'Creating...' : 'Create your brand'}
           </MintButton>
+          <p className="mt-3 text-[11.5px] text-[#6E737B]">Takes about two minutes. You can edit it anytime.</p>
         </section>
       )}
 
@@ -149,7 +207,7 @@ export default function BrandVoiceView() {
   )
 }
 
-function BrandWizardModal({
+export function BrandWizardModal({
   projectId,
   initial,
   onClose,

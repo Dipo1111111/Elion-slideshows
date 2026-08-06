@@ -2,6 +2,7 @@
 // then pinned bottom: plan widget, Sign out, account block. (Settings was a
 // duplicate link to Plan & Billing, so it was removed; plan lives in billing.
 // The brand switcher lives in the Brand Voice tab header, not the sidebar.)
+import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { BookOpen, Home, Images, LogOut, Plus, Wallet } from 'lucide-react'
 import type { Session } from '@supabase/supabase-js'
@@ -10,7 +11,8 @@ import { useMe } from '@/lib/me'
 import { supabase } from '@/lib/supabase'
 import { initialsFrom } from '@/lib/format'
 import { BRAND_NAME } from '@/lib/brand'
-import { FOCUS, Icon } from './primitives'
+import { useAnimatedClose } from '@/lib/useAnimatedClose'
+import { FOCUS, Icon, QuietButton } from './primitives'
 import { UsageWidget } from './UsageWidget'
 import logoUrl from '@/assets/elion-logo.png'
 
@@ -25,6 +27,7 @@ export default function Sidebar({ session }: { session: Session }) {
   const { me } = useMe()
   const { openModal } = useGenerate()
   const email = session.user.email ?? 'Account'
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   return (
     <aside className="flex w-[240px] shrink-0 flex-col border-r border-[#16171D] font-sans">
@@ -73,7 +76,7 @@ export default function Sidebar({ session }: { session: Session }) {
         <div className="mt-2 flex flex-col">
           <button
             type="button"
-            onClick={() => void supabase?.auth.signOut()}
+            onClick={() => setConfirmOpen(true)}
             className={`flex h-9 items-center gap-3 rounded-lg px-3 text-left text-[13px] font-medium text-[#7A7F87] transition hover:text-[#D1D5DB] active:scale-[0.98] ${FOCUS}`}
           >
             <LogOut className="h-4 w-4 text-[#5F646B]" strokeWidth={1.5} />
@@ -88,6 +91,61 @@ export default function Sidebar({ session }: { session: Session }) {
           <p className="min-w-0 truncate text-[12px] font-semibold text-white">{email}</p>
         </div>
       </div>
+
+      {confirmOpen && (
+        <SignOutDialog
+          onClose={() => setConfirmOpen(false)}
+          onConfirm={() => void supabase?.auth.signOut()}
+        />
+      )}
     </aside>
+  )
+}
+
+// Sign-out confirmation. FLAGGED: not in the mockup; a bare one-click signOut
+// is too easy to hit by accident, so the button asks first. Danger styling
+// stays in the soft-red token, never the white action language.
+function SignOutDialog({ onClose, onConfirm }: { onClose: () => void; onConfirm: () => void }) {
+  const { closing, requestClose } = useAnimatedClose(true, onClose)
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') requestClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [requestClose])
+
+  return (
+    <div
+      className={`${closing ? 'modal-backdrop-out' : 'modal-backdrop'} fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs`}
+      onClick={requestClose}
+    >
+      <div
+        role="alertdialog"
+        aria-modal="true"
+        aria-label="Sign out"
+        className={`${closing ? 'modal-panel-out pointer-events-none' : 'modal-panel'} w-full max-w-sm rounded-2xl border border-[#22242D] bg-[#08080A] p-6 text-white shadow-2xl`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10">
+          <LogOut className="h-4 w-4 text-white" strokeWidth={1.5} />
+        </span>
+        <h2 className="mt-4 font-display text-[17px] font-bold tracking-[-0.01em] text-white">Sign out?</h2>
+        <p className="mt-1.5 text-[12.5px] leading-relaxed text-[#9CA0A8]">
+          Your slideshows and brands stay saved. You'll just need to sign in again to get back in.
+        </p>
+        <div className="mt-6 flex justify-end gap-2">
+          <QuietButton onClick={requestClose}>Cancel</QuietButton>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className={`inline-flex items-center justify-center gap-2 rounded-full border border-[#F4877E]/40 bg-[#F4877E]/15 px-5 py-2.5 text-[13px] font-semibold text-[#F4877E] transition hover:bg-[#F4877E]/25 active:scale-[0.98] ${FOCUS}`}
+          >
+            Sign out
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }

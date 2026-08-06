@@ -77,7 +77,9 @@ export default function HowItWorks() {
   return (
     <section id="how" ref={scope} className="scroll-mt-16 px-5 py-24 sm:px-6 sm:py-32">
       <div className="mx-auto grid w-full max-w-[1120px] gap-14 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
-        <div className="self-start lg:sticky lg:top-24">
+        {/* min-w-0: grid items otherwise keep their content's min-content
+            width and overflow the viewport on mobile (seen at 436px on 375px). */}
+        <div className="min-w-0 self-start lg:sticky lg:top-24">
           <h2 className="font-display text-[clamp(1.7rem,3.4vw,2.5rem)] font-bold leading-[1.08] tracking-[-0.02em] text-white">
             From idea to a posted slideshow.
           </h2>
@@ -121,7 +123,7 @@ export default function HowItWorks() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-16 lg:gap-20">
+        <div className="flex min-w-0 flex-col gap-16 lg:gap-20">
           {STEPS.map((s) => (
             <article key={s.num} className="how-block">
               <div className="border-t border-[#16171D] pt-10">

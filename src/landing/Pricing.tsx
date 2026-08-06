@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Check } from 'lucide-react'
 import { useGSAP } from '@gsap/react'
@@ -11,7 +11,7 @@ gsap.registerPlugin(useGSAP, ScrollTrigger)
 interface Tier {
   name: string
   monthly: string
-  annual?: string
+  annualPrice?: string
   tagline: string
   features: string[]
   cta: string
@@ -20,6 +20,7 @@ interface Tier {
 }
 
 // Three columns per PRICING.md: Free · Creator $19 ($190/yr) · Studio $49 ($490/yr).
+// annualPrice is the yearly bill (two months free vs the monthly rate).
 const TIERS: Tier[] = [
   {
     name: 'Free',
@@ -39,7 +40,7 @@ const TIERS: Tier[] = [
   {
     name: 'Creator',
     monthly: '$19',
-    annual: 'or $190/yr',
+    annualPrice: '$190',
     tagline: 'For creators posting every week.',
     features: [
       '100 slideshows a month',
@@ -55,7 +56,7 @@ const TIERS: Tier[] = [
   {
     name: 'Studio',
     monthly: '$49',
-    annual: 'or $490/yr',
+    annualPrice: '$490',
     tagline: 'For agencies and multi-brand creators.',
     features: [
       '500 slideshows a month',
@@ -71,6 +72,7 @@ const TIERS: Tier[] = [
 
 export default function Pricing() {
   const scope = useRef<HTMLElement>(null)
+  const [annual, setAnnual] = useState(false)
 
   useGSAP(
     () => {
@@ -87,7 +89,7 @@ export default function Pricing() {
   )
 
   return (
-    <section id="pricing" ref={scope} className="relative overflow-hidden border-t border-[#16171D] px-5 py-24 sm:px-6 sm:py-32">
+    <section id="pricing" ref={scope} className="relative scroll-mt-16 overflow-hidden border-t border-[#16171D] px-5 py-24 sm:px-6 sm:py-32">
       <div
         aria-hidden
         className="pointer-events-none absolute left-1/2 top-1/2 h-[520px] w-[760px] max-w-full -translate-x-1/2 -translate-y-1/2"
@@ -102,11 +104,48 @@ export default function Pricing() {
           Try it free. Upgrade when the slideshows matter more.
         </p>
 
-        <div className="mt-14 grid items-start gap-6 md:grid-cols-3 md:gap-4">
+        {/* Monthly / Yearly: Yearly bills once and saves ~17% off the monthly rate. */}
+        <div className="mt-8 flex justify-center">
+          <div
+            role="group"
+            aria-label="Billing period"
+            className="inline-flex items-center rounded-full border border-[#1E2028] bg-[#0C0D10] p-1"
+          >
+            <button
+              type="button"
+              onClick={() => setAnnual(false)}
+              aria-pressed={!annual}
+              className={`rounded-full px-4 py-1.5 text-[12.5px] font-semibold transition active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3B82F6] ${
+                !annual ? 'bg-white text-black' : 'text-[#9CA0A8] hover:text-white'
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              type="button"
+              onClick={() => setAnnual(true)}
+              aria-pressed={annual}
+              className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-[12.5px] font-semibold transition active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3B82F6] ${
+                annual ? 'bg-white text-black' : 'text-[#9CA0A8] hover:text-white'
+              }`}
+            >
+              Yearly
+              <span
+                className={`rounded-full px-1.5 py-[1px] text-[10px] font-bold ${
+                  annual ? 'bg-[#3B82F6]/20 text-[#3B82F6]' : 'bg-white/10 text-[#6E737B]'
+                }`}
+              >
+                Save 17%
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-10 grid gap-6 md:grid-cols-3 md:gap-4">
           {TIERS.map((t) => (
             <div
               key={t.name}
-              className={`price-col relative rounded-2xl p-6 sm:p-7 ${
+              className={`price-col relative flex flex-col rounded-2xl p-6 sm:p-7 ${
                 t.featured
                   ? 'border border-[#3B82F6]/50 shadow-[0_0_60px_-18px_rgba(59,130,246,0.45)]'
                   : 'border border-[#1E2028]'
@@ -120,15 +159,21 @@ export default function Pricing() {
 
               <h3 className="font-display text-[16px] font-bold text-white">{t.name}</h3>
               <div className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                <span className="font-num text-[48px] font-bold leading-none tracking-tight text-white">{t.monthly}</span>
-                <span className="text-[14px] font-medium text-[#9CA0A8]">
-                  {t.monthly === '$0' ? 'forever' : '/mo'}
+                <span className="font-num text-[48px] font-bold leading-none tracking-tight text-white">
+                  {annual && t.annualPrice ? t.annualPrice : t.monthly}
                 </span>
-                {t.annual && <span className="text-[12px] font-semibold text-[#6E737B]">{t.annual}</span>}
+                <span className="text-[14px] font-medium text-[#9CA0A8]">
+                  {t.monthly === '$0' ? 'forever' : annual && t.annualPrice ? '/yr' : '/mo'}
+                </span>
+                {t.monthly !== '$0' && t.annualPrice && (
+                  <span className="text-[12px] font-semibold text-[#6E737B]">
+                    {annual ? `or ${t.monthly}/mo` : `or ${t.annualPrice}/yr`}
+                  </span>
+                )}
               </div>
               <p className="mt-2.5 text-[13px] text-[#9CA0A8]">{t.tagline}</p>
 
-              <ul className="mt-6 space-y-2.5 text-[13.5px] text-[#E5E7EB]">
+              <ul className="mt-6 flex-1 space-y-2.5 text-[13.5px] text-[#E5E7EB]">
                 {t.features.map((f) => (
                   <li key={f} className="flex items-start gap-2.5">
                     <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#3B82F6]" strokeWidth={1.5} />

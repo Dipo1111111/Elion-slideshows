@@ -133,7 +133,7 @@ function SidebarRail() {
   ]
   return (
     <aside className="hidden w-[150px] shrink-0 flex-col border-r border-[#16171D] px-2 py-3 sm:flex">
-      <img src={logoUrl} alt="" className="h-3.5 w-auto px-1" />
+      <img src={logoUrl} alt="" className="h-4 w-auto shrink-0 self-start" />
       <span className="mt-3 flex h-7 items-center gap-1.5 rounded-md px-2 text-[8.5px] font-bold text-white">
         <Plus className="h-3 w-3 text-white" strokeWidth={1.5} />
         Generate
@@ -294,9 +294,34 @@ export function BrainPreview() {
 }
 
 /* ---------- how-it-works 2: the Generate modal, mirroring GenerateModal ---------- */
+// Real photos, matched to the preview Brain (Fitness without a gym). Each pack
+// gets its own covers; a remote failure falls back to a picsum seed so the
+// cell never ships blank.
+const FALLBACKS = [
+  ['elion-pack-a', 'elion-pack-b', 'elion-pack-c', 'elion-pack-d'],
+  ['elion-pack-e', 'elion-pack-f', 'elion-pack-g', 'elion-pack-h'],
+]
 const PACKS = [
-  { name: 'Fitness without a gym', count: 40 },
-  { name: 'Gym motivation', count: 24 },
+  {
+    name: 'Home workouts',
+    count: 40,
+    images: [
+      'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=320&q=70&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=320&q=70&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=320&q=70&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=320&q=70&auto=format&fit=crop',
+    ],
+  },
+  {
+    name: 'No equipment',
+    count: 24,
+    images: [
+      'https://images.unsplash.com/photo-1550345332-09e3ac987658?w=320&q=70&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1552196563-55cd4e45efb3?w=320&q=70&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=320&q=70&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1538805060514-97d9cc17730c?w=320&q=70&auto=format&fit=crop',
+    ],
+  },
 ]
 
 export function GeneratePreview() {
@@ -340,15 +365,25 @@ export function GeneratePreview() {
           <span className="text-[7px] font-semibold text-[#5F646B]">2 of 2 selected</span>
         </div>
         <div className="grid grid-cols-2 gap-1.5">
-          {PACKS.map((p) => (
+          {PACKS.map((p, pi) => (
             <div
               key={p.name}
               className="relative overflow-hidden rounded-md border border-[#3B82F6]/60 text-left"
             >
-              <span className="grid aspect-[4/3] grid-cols-2 grid-rows-2">
-                {['elion-pack-a', 'elion-pack-b', 'elion-pack-c', 'elion-pack-d'].map((s) => (
-                  <span key={s} className="overflow-hidden bg-[#0C0D10]">
-                    <img src={picsum(s, 60, 45)} alt="" loading="lazy" className="h-full w-full object-cover" />
+              <span className="grid aspect-[4/5] grid-cols-2 grid-rows-2">
+                {p.images.map((src, i) => (
+                  <span key={i} className="overflow-hidden bg-[#0C0D10]">
+                    <img
+                      src={src}
+                      alt=""
+                      loading="lazy"
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        const img = e.currentTarget
+                        img.onerror = null
+                        img.src = picsum(FALLBACKS[pi][i], 120, 150)
+                      }}
+                    />
                   </span>
                 ))}
               </span>

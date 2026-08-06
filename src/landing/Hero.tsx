@@ -46,13 +46,12 @@ export default function Hero() {
           .from('.hero-chip', { autoAlpha: 0, y: 14, duration: 0.6, stagger: 0.12 }, 0.95)
           .from('.scroll-cue', { autoAlpha: 0, duration: 0.6 }, 1.15)
 
-        // Scroll-exit scrub: copy lifts and fades, the window drifts back.
-        // The window keeps full opacity through the exit: one opacity
-        // controller per element, or GSAP's two tweens fight and the window
-        // reads as faded at odd scroll positions.
+        // Scroll-exit scrub: the copy lifts slightly as you scroll away. No
+        // opacity here: the entrance timeline owns copy opacity, and two
+        // controllers on the same element fight (one opacity controller per
+        // element rule). The copy stays fully legible until it leaves view.
         gsap.to('.hero-left', {
           yPercent: -6,
-          autoAlpha: 0.5,
           ease: 'none',
           scrollTrigger: { trigger: scope.current, start: 'top top', end: 'bottom 45%', scrub: true },
         })

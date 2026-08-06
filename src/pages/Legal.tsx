@@ -8,7 +8,7 @@ import { BRAND_NAME } from '@/lib/brand'
 import { FOCUS } from '@/components/primitives'
 import logoUrl from '@/assets/elion-logo.png'
 
-const CONTACT = 'support@elion.ai'
+const CONTACT = 'skyletlabs@gmail.com'
 
 interface Doc {
   title: string
@@ -45,8 +45,8 @@ const DOCS: Record<string, Doc> = {
       {
         heading: '4. Plans and payment',
         body: [
-          `The free plan includes a limited number of lifetime slideshows with a small corner mark on exports. The Pro plan adds a monthly allowance, no watermark, and additional brand projects, and is billed through our payment processor.`,
-          `Pro renews automatically until you cancel. Cancel anytime from your account or the payment processor; access continues until the end of the paid period.`,
+          `The free plan includes a limited number of lifetime slideshows with a small corner mark on exports. Paid plans add a monthly allowance, no watermark, and additional brand projects, and are billed through our payment processor.`,
+          `Subscriptions renew automatically until you cancel. Cancel anytime from your account or the payment processor; access continues until the end of the paid period.`,
         ],
       },
       {
@@ -145,7 +145,7 @@ const DOCS: Record<string, Doc> = {
       {
         heading: '1. Pro subscriptions',
         body: [
-          `Payments are processed by our payment processor, Lemon Squeezy. If you are not satisfied with the Pro plan, you may request a full refund within 14 days of purchase, no questions asked.`,
+          `Payments are processed by our payment processor, Lemon Squeezy. If you are not satisfied with a paid plan, you may request a full refund within 14 days of purchase, no questions asked.`,
           `To request a refund, email ${CONTACT} with the email on your account and the reason. Refunds are issued back to the original payment method within 5 to 10 business days.`,
         ],
       },

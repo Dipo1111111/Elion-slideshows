@@ -155,9 +155,15 @@
 - [x] Auth page styled
 - [x] Empty states, loading states, error toasts (sonner)
 - [x] Copy pass on all user-facing strings (BRAND_NAME everywhere, no em dashes)
+- [x] Smooth scroll behavior (`scroll-behavior: smooth`, reduced-motion gated; `scroll-mt` on anchors)
+- [x] Landing navbar redesigned via /impeccable (scroll-progress hairline, animated underline links, mobile hamburger, Escape closes) — verified via screenshots
+- [x] Landing mobile responsiveness fixed (HowItWorks grid overflow)
+- [x] Onboarding rewritten as a fully functional 3-step guided flow (create brand via 5-question wizard → pull backgrounds → open generator) — verified end-to-end via puppeteer in forced preview mode
+- [x] Brand Voice empty-state glitch fixed (skeleton on `meLoading` + `hasBrain` form gating — no flash on hard refresh)
 
 ## Phase 10 — Deploy + verification
 
+- [x] `vercel.json` created (SPA rewrites to `/index.html`, `/api/*` passthrough, security headers). NOTE: Vercel serves the static build only; the Express API in `server/` needs serverless functions or a separate host for `/api` to work in production. Current `npm start` (Node + `server/`) is the full-stack path.
 - [ ] Render web service (Node, `npm run build` + `npm start`) (user)
 - [ ] Env vars set in Render (all from BUILD_PLAN §14) (user)
 - [ ] `/api/health` green on Render

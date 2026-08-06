@@ -42,7 +42,7 @@ export default function Faq() {
   )
 
   return (
-    <section id="faq" ref={scope} className="px-5 py-24 sm:px-6 sm:py-32">
+    <section id="faq" ref={scope} className="scroll-mt-16 px-5 py-24 sm:px-6 sm:py-32">
       <div className="mx-auto w-full max-w-[720px]">
         <h2 className="text-center font-display text-[clamp(1.7rem,3.4vw,2.5rem)] font-bold leading-[1.08] tracking-[-0.02em] text-white">
           Questions, answered.

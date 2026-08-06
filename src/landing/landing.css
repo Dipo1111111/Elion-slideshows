@@ -218,6 +218,35 @@
   }
 }
 
+/* ---------- header scroll-progress hairline + mobile menu panel ---------- */
+.nav-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  height: 2px;
+  width: 100%;
+  background: #3b82f6;
+  transform: scaleX(0);
+  transform-origin: left;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .nav-panel {
+    animation: nav-panel-in 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+@keyframes nav-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ---------- footer giant word ---------- */
 .giant-mask {
   display: block;
