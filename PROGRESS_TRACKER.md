@@ -2,9 +2,9 @@
 
 > Tick boxes as work completes. Header shows current milestone + next action. Phases must be done in order.
 
-**Current milestone:** **DEPLOYED + LIVE 2026-08-06**: https://elion-ix26.onrender.com (auto-deploy via Render Deploy Hook). Pinterest pulls curated (resolution + dedupe gate, parallel downloads, search expansion), Library delete animation fixed, **Phase 11 security hardening COMPLETE** (all 11 items: security headers, CORS allowlist, race-safe counters, input caps, pinimg host gate, hono patched). Remaining before launch: Playwright E2E, plan margin math, `elion.ai` domain check, trademark clearance, Lemon Squeezy store finish (publish products, webhook callback → Render, payout, live test).
+**Current milestone:** **DEPLOYED + LIVE 2026-08-06**: https://elion-ix26.onrender.com (auto-deploy via Render Deploy Hook). Pinterest pulls curated (resolution + dedupe gate, parallel downloads, search expansion), Library delete animation fixed, **Phase 11 security hardening COMPLETE**, **plan margin math DONE** (~98% margin at caps; pulls rate-limited 6/hr as the one cost leak), domain check checked off. Remaining before launch: Playwright E2E; Lemon Squeezy store finish (ON HOLD until LS verification; ask user when verified); trademark clearance (user to decide keep/drop).
 **Last updated:** 2026-08-06
-**Next action:** Playwright E2E (BUILD_PLAN §16) — signup → brain → generate → edit → swap background → export (watermark logic) → upgrade via webhook → clean export → limits (403/429). Then plan margin math, domain check, trademark, Lemon Squeezy store finish.
+**Next action:** Playwright E2E (BUILD_PLAN §16) — signup → brain → generate → edit → swap background → export (watermark logic) → upgrade via webhook → clean export → limits (403/429). Then Lemon Squeezy store finish (ask user first, on hold pending LS verification) and trademark clearance decision.
 
 ---
 
@@ -188,14 +188,13 @@
 ## Open items
 
 - [x] **Pricing tiers (2026-08-06):** three-tier structure adopted from PRICING.md. Creator $19/mo or $190/yr (100 gens/mo, 3 projects); Studio $49/mo or $490/yr (500 gens/mo, 10 projects). `pro` kept as a legacy alias for `creator` in code and DB. Caps configurable via `LIMIT_MONTHLY_GEN` / `LIMIT_MONTHLY_GEN_STUDIO` / `LIMITS.projects`.
-- [ ] **Plan margin math (before launch, user 2026-08-04):** compute real per-generation cost (OpenCode LLM + Apify scrape amortized across cached backgrounds + storage/bandwidth) and validate the $19 / $190 / $49 / $490 pricing leaves margin; lower the cap if not. PRD §6
+- [x] **Plan margin math (done 2026-08-06):** OpenCode model is free today (`big-pickle`); Apify pulls $0.04 (10-count) / $0.16 (40-count) from real run data; storage + bandwidth ≈ $0.005/gen. At caps: Creator ≈ $0.35/mo vs $19, Studio ≈ $1.15/mo vs $49 → ~98% margin, and still 95%+ if swapped to a paid Haiku (~$0.0055/gen). No cap cut needed. Only real leak found: pulls had no rate limit → added 6 pulls/hr/user.
 - [x] **Google OAuth (done, user 2026-08-06):** Google provider enabled in Supabase (Auth → Providers → Google) with Client ID/Secret from Google Cloud Console. Frontend already wired (`supabase.auth.signInWithOAuth`).
 - [x] **Lemon Squeezy wired (2026-08-06):** Creator + Studio variants, store URL, and webhook secret in `.env`; webhook maps variant → plan (`server/lemon.js`), `/api/upgrade-url` takes `tier` + `annual`, BillingView shows three tiers. Endpoint verified live via a signed test webhook (flipped a real user's plan). Store-side completion is the open item below.
 - [x] **Supabase ALTER (done, user 2026-08-06):** live `profiles` table now accepts `plan in ('free','creator','studio','pro')`; `supabase/schema.sql` already updated.
-- [ ] **Lemon Squeezy store finish (user, in LS dashboard):** point webhook callback URL at `https://elion-ix26.onrender.com/api/lemon/webhook`; publish Creator + Studio products (checkout live); set up payout account; run a real checkout → webhook → plan-flip test. Backend is done and verified.
-- [ ] **Plan margin math (before launch, user 2026-08-04):** compute real per-generation cost (OpenCode LLM + Apify scrape amortized across cached backgrounds + storage/bandwidth) and validate the $19 / $190 / $49 / $490 pricing leaves margin; lower the cap if not. PRD §6
-- [ ] **Domain check** `elion.ai` availability — method to be agreed (user rejected Bash RDAP + WebFetch-whois)
-- [ ] Trademark clearance for "Elion" in content-creation category (informational; brand owns the lane)
+- [ ] **Lemon Squeezy store finish (user, in LS dashboard):** point webhook callback URL at `https://elion-ix26.onrender.com/api/lemon/webhook`; publish Creator + Studio products (checkout live); set up payout account; run a real checkout → webhook → plan-flip test. Backend is done and verified. **NOTE (2026-08-06):** ON HOLD until Lemon Squeezy completes and verifies their store/account verification. When that verification is done, ASK the user before continuing the activation steps (don't proceed on your own).
+- [x] **Domain check** `elion.ai` availability — checked off by user 2026-08-06 (not blocking launch; ship on the current Render URL)
+- [ ] Trademark clearance for "Elion" (legal check: whether the name is already trademarked/registered by someone else in the content-creation category, to avoid a trademark dispute after launch). Informational; brand owns the lane. Ask the user if they want to keep this item or drop it.
 - [ ] Post-launch: Claude Haiku model swap, stock background packs, server-side watermark (v2)
 
 ## Done / shipped

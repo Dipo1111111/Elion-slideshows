@@ -13,6 +13,7 @@ import * as db from './db.js'
 import {
   getLimits,
   checkRateLimit,
+  checkPullRateLimit,
   assertCanGenerate,
   remainingFor,
   chargeGeneration,
@@ -231,6 +232,7 @@ app.get('/api/library', h(async (req, res) => {
 }))
 
 app.post('/api/library/pull', h(async (req, res) => {
+  checkPullRateLimit(req.user.id)
   const projectId = String(req.body?.projectId || '')
   if (!projectId) throw new HttpError(400, 'projectId is required.')
   const searches = typeof req.body?.searches === 'string' ? req.body.searches : ''

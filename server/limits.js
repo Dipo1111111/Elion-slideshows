@@ -19,21 +19,37 @@ export const LIMITS = {
 
 const HOUR_MS = 60 * 60 * 1000
 const hourlyHits = new Map() // userId -> number[] of recent attempt timestamps
+const hourlyPulls = new Map() // userId -> number[] of recent pull timestamps
+
+// Every pull of 10-40 backgrounds costs ~$0.04-0.16 on Apify (real run data,
+// 2026-08-06), so pulls get their own cap separate from generations: 6 pulls/hr
+// is many more than a real curation session needs, and bounds the blast radius
+// if someone tries to run up scrape charges.
+const PULL_HOURLY = 6
 
 export function getLimits() {
   return LIMITS
 }
 
-// Anti-abuse: max 10 generation attempts per hour, all tiers. Throws 429.
-export function checkRateLimit(userId) {
+function hitRateLimit(map, userId, cap, message) {
   const now = Date.now()
-  const recent = (hourlyHits.get(userId) || []).filter((t) => now - t < HOUR_MS)
-  if (recent.length >= LIMITS.hourly) {
-    hourlyHits.set(userId, recent)
-    throw new HttpError(429, 'Too many generations this hour. Try again in a bit.')
+  const recent = (map.get(userId) || []).filter((t) => now - t < HOUR_MS)
+  if (recent.length >= cap) {
+    map.set(userId, recent)
+    throw new HttpError(429, message)
   }
   recent.push(now)
-  hourlyHits.set(userId, recent)
+  map.set(userId, recent)
+}
+
+// Anti-abuse: max 10 generation attempts per hour, all tiers. Throws 429.
+export function checkRateLimit(userId) {
+  hitRateLimit(hourlyHits, userId, LIMITS.hourly, 'Too many generations this hour. Try again in a bit.')
+}
+
+// Pulls are the only route with a real unit cost (Apify scrape), so cap them.
+export function checkPullRateLimit(userId) {
+  hitRateLimit(hourlyPulls, userId, PULL_HOURLY, 'Too many pulls this hour. Try again in a bit.')
 }
 
 // Monthly cap for a paid plan (creator, studio, or legacy pro).
