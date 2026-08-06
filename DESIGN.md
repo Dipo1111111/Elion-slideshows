@@ -448,6 +448,10 @@ text, Copy, Image) + Download all / Copy all text.
    themed to render these exact values. Do not let shadcn defaults leak in (no default borders,
    fills, radii, or focus styles). If a shadcn component cannot reproduce a recipe exactly, hand-roll
    the element with the recipe class string instead. Identical rendering wins over component reuse.
+6. **Three-tier pricing (PRICING.md).** The locked two-plan anatomy (Free + Pro) is extended to
+   three columns: Free · Creator $19/mo ($190/yr) · Studio $49/mo ($490/yr). Billing copy, the
+   UsageWidget label, and plan names render Creator/Studio; the blue-highlighted card is Creator.
+   Everything else in the Billing recipe is unchanged.
 
 Everything else: every color, size, radius, spacing, font, icon, hover state, transition, and copy
 string is fixed by this document. No restyling. No iteration on the look. Build it to look exactly

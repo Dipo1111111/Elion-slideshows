@@ -89,7 +89,10 @@ export const api = {
     hashtags?: string[]
     slides: { text?: string; bg: { id: string } | null }[]
   }) => req<{ url: string; token: string }>('/exports', { method: 'POST', body: JSON.stringify(body) }),
-  upgradeUrl: (annual = false) => req<{ url: string }>(`/upgrade-url${annual ? '?annual=1' : ''}`),
+  upgradeUrl: (opts: { annual?: boolean; tier?: 'creator' | 'studio' } = {}) => {
+    const qs = [opts.annual ? 'annual=1' : '', opts.tier === 'studio' ? 'tier=studio' : ''].filter(Boolean).join('&')
+    return req<{ url: string }>(`/upgrade-url${qs ? `?${qs}` : ''}`)
+  },
 }
 
 // Every background loads same-origin so canvas export is never tainted.

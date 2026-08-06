@@ -138,7 +138,8 @@ export function ProjectSwitcher() {
             </button>
             {atCap && (
               <p className="px-3 pb-2 pt-1 text-[10.5px] font-medium text-[#5F646B]">
-                Your {me.plan} plan allows {cap} brand{cap === 1 ? '' : 's'}. Upgrade to Pro for more.
+                Your {me.plan === 'studio' ? 'Studio' : me.plan === 'creator' || me.plan === 'pro' ? 'Creator' : 'Free'}{' '}
+                plan allows {cap} brand{cap === 1 ? '' : 's'}. Upgrade for more.
               </p>
             )}
           </div>

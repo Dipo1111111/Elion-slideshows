@@ -4,15 +4,15 @@
 
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
-  plan text not null default 'free' check (plan in ('free', 'pro')),
+  plan text not null default 'free' check (plan in ('free', 'creator', 'studio', 'pro')),
   total_gens int not null default 0,        -- free = 3 lifetime (all projects share the quota)
-  monthly_gens int not null default 0,      -- pro = X/month (placeholder 500, month-windowed)
+  monthly_gens int not null default 0,      -- creator/studio = X/month (month-windowed)
   month_start timestamptz not null default now(),
   ls_subscription_id text,                  -- Lemon Squeezy ref (idempotent webhook)
   created_at timestamptz not null default now()
 );
 
--- Brand voices live on projects. Free = 1 project, Pro = N (project cap = plan).
+-- Brand voices live on projects. Free = 1, Creator = 3, Studio = 10 (project cap = plan).
 create table public.projects (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles(id) on delete cascade,

@@ -23,8 +23,8 @@ export function GenerateModal() {
 
   const remaining = me ? remainingForMe(me) : 0
   const overLimit = count > remaining
-  const isPro = me?.plan === 'pro'
-  const capLabel = isPro ? 'Pro slideshows this month' : 'free slideshows'
+  const planName = me?.plan === 'studio' ? 'Studio' : me?.plan === 'creator' || me?.plan === 'pro' ? 'Creator' : 'Free'
+  const capLabel = me?.plan === 'free' ? 'free slideshows' : `${planName} slideshows this month`
   // A project exists but its Brain is unset. Short descriptions produce
   // generic scripts, so nudge the user to fill the niche before generating.
   const brainEmpty = activeProject ? !activeProject.brain?.niche : false

@@ -33,11 +33,17 @@ export const DEMO_PROJECT: Project = {
 
 export const DEMO_ME: Me = {
   id: 'demo-user',
-  plan: 'pro',
+  plan: 'creator',
   totalGens: 0,
   monthlyGens: 0,
   monthStart: now(),
-  limit: { total: 3, monthly: 100, hourly: 10, projects: { free: 1, pro: 5 } },
+  limit: {
+    total: 3,
+    monthly: 100,
+    monthlyStudio: 500,
+    hourly: 10,
+    projects: { free: 1, creator: 3, studio: 10, pro: 3 },
+  },
   projects: [DEMO_PROJECT],
   activeProjectId: DEMO_PROJECT.id,
 }

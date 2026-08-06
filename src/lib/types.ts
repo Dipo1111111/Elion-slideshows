@@ -1,6 +1,7 @@
 // Shared client types, mirroring the server data shapes (BUILD_PLAN §5/§8).
 
-export type Plan = 'free' | 'pro'
+// 'pro' is a legacy alias for 'creator' (profiles created before Studio).
+export type Plan = 'free' | 'creator' | 'studio' | 'pro'
 
 export type BrainKey =
   | 'niche'
@@ -75,8 +76,9 @@ export interface Slideshow {
 export interface Limits {
   total: number
   monthly: number
+  monthlyStudio: number
   hourly: number
-  projects: { free: number; pro: number }
+  projects: { free: number; creator: number; studio: number; pro: number }
 }
 
 export interface Me {

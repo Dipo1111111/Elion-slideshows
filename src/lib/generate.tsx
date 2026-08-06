@@ -73,7 +73,13 @@ export function useGenerate(): GenerateContextValue {
 }
 
 // Used by the generate modal to clamp to the plan's remaining quota.
-export function remainingForMe(me: { plan: string; totalGens: number; monthlyGens: number; limit: { total: number; monthly: number } }): number {
+export function remainingForMe(me: {
+  plan: string
+  totalGens: number
+  monthlyGens: number
+  limit: { total: number; monthly: number; monthlyStudio: number }
+}): number {
   if (me.plan === 'free') return Math.max(0, me.limit.total - me.totalGens)
-  return Math.max(0, me.limit.monthly - me.monthlyGens)
+  const cap = me.plan === 'studio' ? me.limit.monthlyStudio : me.limit.monthly
+  return Math.max(0, cap - me.monthlyGens)
 }

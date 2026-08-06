@@ -89,7 +89,8 @@ app.get('/api/me', h(async (req, res) => {
 app.post('/api/projects', h(async (req, res) => {
   const profile = await db.getProfile(req.user.id)
   if (!(await canCreateProject(req.user.id, profile.plan))) {
-    throw new HttpError(403, `Your plan allows ${getLimits().projects[profile.plan]} project${getLimits().projects[profile.plan] === 1 ? '' : 's'}. Upgrade to Pro for more.`)
+    const cap = getLimits().projects[profile.plan] ?? getLimits().projects.creator
+    throw new HttpError(403, `Your plan allows ${cap} project${cap === 1 ? '' : 's'}. Upgrade for more.`)
   }
   const project = await db.createProject(req.user.id, String(req.body?.name || 'My brand').slice(0, 60))
   res.json(project)
@@ -213,7 +214,16 @@ app.delete('/api/library/:id', h(async (req, res) => {
 
 app.get('/api/upgrade-url', h(async (req, res) => {
   const storeUrl = process.env.LEMON_SQUEEZY_STORE_URL
-  const variantId = req.query?.annual === '1' ? process.env.LEMON_SQUEEZY_VARIANT_ID_ANNUAL : process.env.LEMON_SQUEEZY_VARIANT_ID
+  const isStudio = req.query?.tier === 'studio'
+  const isAnnual = req.query?.annual === '1'
+  const envKey = isStudio
+    ? isAnnual
+      ? 'LEMON_SQUEEZY_VARIANT_ID_STUDIO_ANNUAL'
+      : 'LEMON_SQUEEZY_VARIANT_ID_STUDIO'
+    : isAnnual
+      ? 'LEMON_SQUEEZY_VARIANT_ID_ANNUAL'
+      : 'LEMON_SQUEEZY_VARIANT_ID'
+  const variantId = process.env[envKey]
   if (!storeUrl || !variantId) {
     throw new HttpError(503, 'Billing is not configured on the server.')
   }

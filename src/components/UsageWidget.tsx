@@ -1,5 +1,5 @@
 // Sidebar plan widget (DESIGN.md §7 recipe). Free: lifetime count vs 3,
-// Upgrade link. Pro: monthly count vs monthly cap, no upgrade link.
+// Upgrade link. Creator/Studio: monthly count vs monthly cap, no link.
 import { ArrowRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import type { Me } from '@/lib/types'
@@ -7,15 +7,16 @@ import { FOCUS } from './primitives'
 
 export function UsageWidget({ me }: { me: Me }) {
   const navigate = useNavigate()
-  const isPro = me.plan === 'pro'
-  const used = isPro ? me.monthlyGens : me.totalGens
-  const cap = isPro ? me.limit.monthly : me.limit.total
+  const paid = me.plan !== 'free'
+  const used = paid ? me.monthlyGens : me.totalGens
+  const cap = me.plan === 'studio' ? me.limit.monthlyStudio : paid ? me.limit.monthly : me.limit.total
   const pct = cap > 0 ? Math.round((used / cap) * 100) : 0
+  const planLabel = me.plan === 'studio' ? 'Studio plan' : paid ? 'Creator plan' : 'Free plan'
 
   return (
     <div className="rounded-xl border border-[#1E2028] p-3.5">
       <div className="flex items-baseline justify-between gap-2">
-        <span className="text-[11px] font-semibold text-[#9CA0A8]">{isPro ? 'Pro plan' : 'Free plan'}</span>
+        <span className="text-[11px] font-semibold text-[#9CA0A8]">{planLabel}</span>
         <span className="font-num text-[11px] text-[#6E737B]">
           {used} of {cap} used
         </span>
@@ -26,13 +27,13 @@ export function UsageWidget({ me }: { me: Me }) {
           style={{ width: `${Math.min(100, pct)}%` }}
         />
       </div>
-      {!isPro && (
+      {!paid && (
         <button
           type="button"
           onClick={() => navigate('/app/billing')}
           className={`mt-3 inline-flex items-center gap-1 text-[12px] font-bold text-[#3B82F6] transition-colors hover:text-[#6FA1FF] ${FOCUS}`}
         >
-          Upgrade to Pro
+          Upgrade
           <ArrowRight className="h-3 w-3" strokeWidth={1.5} />
         </button>
       )}

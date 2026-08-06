@@ -1,6 +1,7 @@
-// Lemon Squeezy billing. Merchant of record: Free = 3 lifetime gens, Pro =
-// $19/mo or $99/yr. The webhook flips profiles.plan; handler is idempotent
-// (re-upserting the same plan is a no-op) and the secret is never logged.
+// Lemon Squeezy billing. Merchant of record: Free = 3 lifetime gens,
+// Creator = $19/mo or $190/yr, Studio = $49/mo or $490/yr. The webhook
+// flips profiles.plan by variant ID; the handler is idempotent (re-upserting
+// the same plan is a no-op) and the secret is never logged.
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { HttpError } from './util.js'
 import { requireDb } from './db.js'
@@ -19,6 +20,20 @@ function verifySignature(rawBody, signature) {
   }
 }
 
+// A Lemon Squeezy subscription maps to a plan by its variant ID. Studio has
+// its own variants; every other paid variant is Creator. Unknown variants
+// default to Creator so a new price never strands a paying user on Free.
+function planForVariant(variantId) {
+  const id = String(variantId || '')
+  const studio = [
+    process.env.LEMON_SQUEEZY_VARIANT_ID_STUDIO,
+    process.env.LEMON_SQUEEZY_VARIANT_ID_STUDIO_ANNUAL,
+  ]
+    .map(String)
+    .filter(Boolean)
+  return studio.includes(id) ? 'studio' : 'creator'
+}
+
 // `meta.custom_data.user_id` (set at checkout) maps the purchase to the
 // profile. If it is missing the event is acknowledged but skipped; matching
 // by email would require the email to live on profiles, which it does not.
@@ -28,9 +43,13 @@ export async function handleWebhook(req, res) {
   const userId = req.body?.meta?.custom_data?.user_id
   const subscriptionId =
     req.body?.data?.id || req.body?.data?.attributes?.first_subscription?.id || req.body?.data?.attributes?.subscription_id
+  const variantId =
+    req.body?.data?.attributes?.variant_id ||
+    req.body?.data?.attributes?.first_subscription?.variant_id ||
+    req.body?.data?.attributes?.order_item?.variant_id
 
   if (PRO_EVENTS.includes(event)) {
-    if (userId) await setPlan(userId, 'pro', subscriptionId)
+    if (userId) await setPlan(userId, planForVariant(variantId), subscriptionId)
   } else if (FREE_EVENTS.includes(event) && userId) {
     await setPlan(userId, 'free', null)
   }
