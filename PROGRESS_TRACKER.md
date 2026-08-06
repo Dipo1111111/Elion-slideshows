@@ -2,9 +2,9 @@
 
 > Tick boxes as work completes. Header shows current milestone + next action. Phases must be done in order.
 
-**Current milestone:** **Backend live + auth verified (2026-08-05)**: Supabase schema + trigger + private `backgrounds` bucket applied and verified live; auth verified end-to-end through the running server (tokens are **ES256**, `server/auth.js` verifies via GoTrue `/auth/v1/user`, `SUPABASE_JWT_SECRET` not needed). Auth page has email-confirmation state; full Landing + Legal (terms/privacy/refund) built. Remaining (user): Google OAuth client ID/secret, Lemon Squeezy keys, APP_URL + deploy, then Playwright verification + deploy.
-**Last updated:** 2026-08-05
-**Next action:** User provides Google Cloud OAuth Client ID + secret (enable Google provider in Supabase) and Lemon Squeezy keys (store URL + 2 variant IDs + webhook secret); then `npm run dev` end-to-end + Playwright (BUILD_PLAN §16), then deploy (Phase 10).
+**Current milestone:** **Backend live + auth verified (2026-08-05)**; **Creator/Studio billing wired (2026-08-06)**: three-tier pricing (Free · Creator $19/$190 · Studio $49/$490) adopted from PRICING.md, Lemon Squeezy products + variants created by user and wired in `.env` + `server/lemon.js` (webhook flips `creator`/`studio`), schema ALTER run by user, Google OAuth provider enabled by user. Docs pricing copy swept (2026-08-06). Remaining: `APP_URL` + deploy, then Playwright verification (BUILD_PLAN §16), then Phase 11 hardening.
+**Last updated:** 2026-08-06
+**Next action:** Deploy: set `APP_URL` + target host (Render per plan), then `npm run dev` end-to-end + Playwright (BUILD_PLAN §16), then Phase 11 security hardening.
 
 ---
 
@@ -107,7 +107,7 @@
 ## Phase 3 — Brain + projects
 
 - [x] BrandVoiceView: 5 fields for the active project (niche, app name, app description, audience, style memory)
-- [x] Project CRUD: `POST/GET /api/projects`, `PUT /api/projects/:id` (rename + brain, whitelist keys), `DELETE /api/projects/:id`; free = 1 project, Pro = N
+- [x] Project CRUD: `POST/GET /api/projects`, `PUT /api/projects/:id` (rename + brain, whitelist keys), `DELETE /api/projects/:id`; free = 1 project, Creator = 3, Studio = 10
 - [x] Load active project's brain into form on mount (from `/api/me`); brain persisted on Save (modal, not debounced — flagged)
 
 ## Phase 4 — Generation
@@ -115,7 +115,7 @@
 - [x] `server/openrouter.js` (chat JSON, tolerant parse, attribution headers)
 - [x] `server/images.js` (Apify Pinterest pull → download → storage → same-origin `/api/images/:hash` proxy; dev picsum fallback)
 - [x] `server/generate.js` (prompt from brain, batch loop, background resolution from the project's imagePacks)
-- [x] `server/limits.js` (3 lifetime free / 100 monthly pro placeholder / 10 per hr all tiers; counters only on success; config-driven caps)
+- [x] `server/limits.js` (3 lifetime free / 100 monthly creator / 500 monthly studio placeholder / 10 per hr all tiers; counters only on success; config-driven caps)
 - [x] `POST /api/generate` `{count, projectId}` → checks → generate from project brain → resolve backgrounds → insert queue rows → return
 - [x] GenerateModal (count 1/3/5/10) + generate button in DashboardView
 - [x] Error surface for 403/429: modal clamps over-limit counts (danger line) + toast surfaces server errors
@@ -130,7 +130,7 @@
 ## Phase 6 — Export
 
 - [x] `src/lib/render.ts` — 1080×1920 background image + legibility scrim, background-only
-- [x] `src/lib/watermark.ts` — free-tier BRAND_NAME watermark; skipped for pro
+- [x] `src/lib/watermark.ts` — free-tier BRAND_NAME watermark; skipped for paid plans
 - [x] Export tab: Download bg (per slide), Download all, Copy text (per slide), Copy all text
 - [x] Watermark gated on plan from `/api/me`
 - [x] Send to phone: `POST /api/exports` snapshots draft to a 24h token share; `GET /s/:token` public phone page (same-origin images + copyable text); QR rendered in Export tab via `qrcode`
@@ -143,7 +143,7 @@
 
 ## Phase 8 — Billing
 
-- [ ] Lemon Squeezy store + Pro variants created (monthly $19 + annual $99) (user)
+- [x] Lemon Squeezy store + Creator/Studio variants created (user, 2026-08-06): store `https://elionapp.lemonsqueezy.com`, Creator `1987497`/`1987471`, Studio `1987509`/`1987502`, webhook secret saved to `.env`
 - [x] `GET /api/upgrade-url` (checkout + custom user_id, monthly + annual)
 - [x] `POST /api/lemon/webhook` (HMAC verify; plan flip; idempotent)
 - [x] BillingView (plan, usage counters, Upgrade, refresh)
@@ -188,10 +188,10 @@
 ## Open items
 
 - [x] **Pricing tiers (2026-08-06):** three-tier structure adopted from PRICING.md. Creator $19/mo or $190/yr (100 gens/mo, 3 projects); Studio $49/mo or $490/yr (500 gens/mo, 10 projects). `pro` kept as a legacy alias for `creator` in code and DB. Caps configurable via `LIMIT_MONTHLY_GEN` / `LIMIT_MONTHLY_GEN_STUDIO` / `LIMITS.projects`.
-- [ ] **Pro margin math (before launch, user 2026-08-04):** compute real per-generation cost (OpenCode LLM + Apify scrape amortized across cached backgrounds + storage/bandwidth) and validate the $19 / $190 / $49 / $490 pricing leaves margin; lower the cap if not. PRD §6
+- [ ] **Plan margin math (before launch, user 2026-08-04):** compute real per-generation cost (OpenCode LLM + Apify scrape amortized across cached backgrounds + storage/bandwidth) and validate the $19 / $190 / $49 / $490 pricing leaves margin; lower the cap if not. PRD §6
 - [x] **Google OAuth (done, user 2026-08-06):** Google provider enabled in Supabase (Auth → Providers → Google) with Client ID/Secret from Google Cloud Console. Frontend already wired (`supabase.auth.signInWithOAuth`).
-- [x] **Lemon Squeezy wired (2026-08-06):** Creator + Studio variants, store URL, and webhook secret in `.env`; webhook maps variant → plan (`server/lemon.js`), `/api/upgrade-url` takes `tier` + `annual`, BillingView shows three tiers. REMAINING: (1) run the Supabase ALTER below so the DB accepts `creator`/`studio`; (2) point the webhook callback at the real server host after deploy.
-- [ ] **Supabase ALTER (user, do this now):** the live `profiles` table still enforces the old `plan in ('free','pro')` check, which would reject the webhook's `creator`/`studio` flips. Run in the Supabase SQL editor: `alter table public.profiles drop constraint if exists profiles_plan_check; alter table public.profiles add constraint profiles_plan_check check (plan in ('free', 'creator', 'studio', 'pro'));` (`supabase/schema.sql` already updated).
+- [x] **Lemon Squeezy wired (2026-08-06):** Creator + Studio variants, store URL, and webhook secret in `.env`; webhook maps variant → plan (`server/lemon.js`), `/api/upgrade-url` takes `tier` + `annual`, BillingView shows three tiers. REMAINING: point the webhook callback at the real server host after deploy.
+- [x] **Supabase ALTER (done, user 2026-08-06):** live `profiles` table now accepts `plan in ('free','creator','studio','pro')`; `supabase/schema.sql` already updated.
 - [ ] **Domain check** `elion.ai` availability — method to be agreed (user rejected Bash RDAP + WebFetch-whois)
 - [ ] Trademark clearance for "Elion" in content-creation category (informational; brand owns the lane)
 - [ ] Post-launch: Claude Haiku model swap, stock background packs, server-side watermark (v2)

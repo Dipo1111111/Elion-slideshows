@@ -143,7 +143,7 @@ const DOCS: Record<string, Doc> = {
     updated: 'August 5, 2026',
     sections: [
       {
-        heading: '1. Pro subscriptions',
+        heading: '1. Creator and Studio subscriptions',
         body: [
           `Payments are processed by our payment processor, Lemon Squeezy. If you are not satisfied with a paid plan, you may request a full refund within 14 days of purchase, no questions asked.`,
           `To request a refund, email ${CONTACT} with the email on your account and the reason. Refunds are issued back to the original payment method within 5 to 10 business days.`,

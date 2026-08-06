@@ -52,8 +52,8 @@ manually in TikTok's native font.
 - **Data/Auth:** Supabase (Postgres + email/password Auth). Server verifies access tokens against Supabase's `/auth/v1/user` (algorithm-agnostic; survives JWT key rotation to ECC/ES256) and uses the service-role key for DB.
 - **AI:** OpenCode Zen (replaces OpenRouter). Server key + base URL + model from `OPENCODE_API_KEY` / `OPENCODE_BASE_URL` / `OPENCODE_MODEL` env. Model = **`big-pickle`** (the free model), base URL `https://opencode.ai/zen/v1`, verified live 2026-08-05.
 - **Image library:** real backgrounds. A platform Apify key pulls Pinterest images by the Brain's niche and caches them in each project's `imagePacks` for reuse across slideshows (pooling keeps cost down). NO bundled starter packs in v1. Slides always show real photos; there is no gradient state in the UI (empty state → skeleton loader → image-backed cards).
-- **Billing:** Lemon Squeezy (merchant of record). Free = 3 lifetime generations (watermarked exports); Pro = $19/mo or $99/yr, capped slideshows/month (placeholder 100), no watermark, multiple brand projects. Webhook flips plan between `free` / `pro`.
-- **Projects:** brand voices live on projects, not the user. Free = 1 project, Pro = N (each project owns its own Brain). Queue rows belong to a project. Caps (monthly gens, projects) are placeholders until launch.
+- **Billing:** Lemon Squeezy (merchant of record). Free = 3 lifetime generations (watermarked exports); Creator = $19/mo or $190/yr, 100 slideshows/mo (placeholder), no watermark, 3 brand projects; Studio = $49/mo or $490/yr, 500 slideshows/mo (placeholder), no watermark, 10 brand projects. Webhook flips plan between `free` / `creator` / `studio` by variant ID.
+- **Projects:** brand voices live on projects, not the user. Free = 1 project, Creator = 3, Studio = 10 (each project owns its own Brain). Queue rows belong to a project. Caps (monthly gens, projects) are placeholders until launch.
 
 ## How to run
 
@@ -67,7 +67,8 @@ npm start       # single process, serves dist + API on PORT (default 8787)
 Env vars (see `.env.example`): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_JWT_SECRET`,
 `SUPABASE_STORAGE_BUCKET`, `OPENCODE_API_KEY`, `OPENCODE_MODEL`, `OPENCODE_BASE_URL`, `APIFY_API_KEY`, `APIFY_ACTOR_ID`,
 `LEMON_SQUEEZY_WEBHOOK_SECRET`, `LEMON_SQUEEZY_STORE_URL`, `LEMON_SQUEEZY_VARIANT_ID`,
-`LEMON_SQUEEZY_VARIANT_ID_ANNUAL`, `APP_URL`, `PORT`, `BRAND_NAME`.
+`LEMON_SQUEEZY_VARIANT_ID_ANNUAL`, `LEMON_SQUEEZY_VARIANT_ID_STUDIO`, `LEMON_SQUEEZY_VARIANT_ID_STUDIO_ANNUAL`,
+`APP_URL`, `PORT`, `BRAND_NAME`.
 
 ## File map (once scaffolded)
 
@@ -77,7 +78,7 @@ Env vars (see `.env.example`): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUP
 - `server/generate.js` — Brain → prompt → OpenCode → parse slideshows
 - `server/openrouter.js` — OpenCode chat call (env-driven, replaces OpenRouter) + tolerant JSON parse
 - `server/images.js` — Apify Pinterest pull → download → Supabase Storage → same-origin `/api/images/:hash`
-- `server/limits.js` — usage limits (3 lifetime free / 100 monthly pro / 10 per hr)
+- `server/limits.js` — usage limits (3 lifetime free / 100 monthly creator / 500 monthly studio / 10 per hr)
 - `server/lemon.js` — Lemon Squeezy webhook (HMAC verify + plan flip)
 - `src/lib/brand.ts` — `BRAND_NAME` + brand tokens
 - `src/lib/render.ts` — 1080×1920 canvas renderer + background-only export

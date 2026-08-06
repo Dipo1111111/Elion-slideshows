@@ -1,6 +1,6 @@
 // 1080x1920 canvas renderer for export. Background-only: text is added in
 // TikTok/IG's native font. A light scrim keeps the text legible. The free
-// plan bakes the watermark in; Pro skips it (BUILD_PLAN §11).
+// plan bakes the watermark in; paid plans skip it (BUILD_PLAN §11).
 import { drawWatermark } from './watermark'
 
 const WIDTH = 1080

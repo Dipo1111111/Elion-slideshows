@@ -11,8 +11,8 @@ Source of truth for *what* the product is: `PRD.md`. Reconcile any disagreement 
 
 - **Who:** solo TikTok/IG creators. Non-technical. They post slideshows on a schedule and want the next post fast.
 - **Flow:** sign up → set up your Brain (niche, app name, app description, audience, style memory) → Generate (AI writes the script, Elion supplies the background images) → review/edit in the Queue → export 1080×1920 PNG backgrounds + copyable text → post manually in the native app.
-- **Pricing:** Free = 3 lifetime generations (watermarked exports), **1 project**. Pro = **$19/mo or $99/yr**, capped slideshows/month (placeholder **100**, tune before launch), zero watermark, **multiple brand projects** (cap placeholder 5, each project owns its own Brain). Anti-abuse: hard **10 generations/hr/user** rate limit at the API route.
-- **Backgrounds = a real image library:** Pinterest pulls via a **platform-held Apify key** (actor `fatihtahta/pinterest-scraper-search`), downloaded and stored for reuse across slideshows (pooling keeps cost low). **NO bundled starter packs in v1** (they may return as a Pro perk). Every slide gets a real photo; no gradient state in the UI (empty state → skeleton loader → image-backed cards).
+- **Pricing:** Free = 3 lifetime generations (watermarked exports), **1 project**. Creator = **$19/mo or $190/yr**, **100** slideshows/month (placeholder, tune before launch), zero watermark, **3 brand projects** (each owns its own Brain). Studio = **$49/mo or $490/yr**, **500** slideshows/month (placeholder), zero watermark, **10 brand projects**. Anti-abuse: hard **10 generations/hr/user** rate limit at the API route.
+- **Backgrounds = a real image library:** Pinterest pulls via a **platform-held Apify key** (actor `fatihtahta/pinterest-scraper-search`), downloaded and stored for reuse across slideshows (pooling keeps cost low). **NO bundled starter packs in v1** (they may return as a paid-plan perk). Every slide gets a real photo; no gradient state in the UI (empty state → skeleton loader → image-backed cards).
 - **Explicitly NOT in MVP:** posting/scheduling/analytics (no post-bridge — manual posting in native apps), bring-your-own-keys, self-hosting, OAuth (email + password only), user image uploads.
 
 ## 2. Architecture
@@ -63,15 +63,15 @@ elion/
 ```sql
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
-  plan text not null default 'free' check (plan in ('free','pro')),
+  plan text not null default 'free' check (plan in ('free','creator','studio')),
   total_gens int not null default 0,      -- free = 3 lifetime (all projects share the quota)
-  monthly_gens int not null default 0,    -- pro = cap/month (placeholder 100, month-windowed)
+  monthly_gens int not null default 0,    -- paid = cap/month (creator 100 / studio 500, month-windowed)
   month_start timestamptz not null default now(),
   ls_subscription_id text,                -- Lemon Squeezy ref (idempotent webhook)
   created_at timestamptz not null default now()
 );
 
--- Brand voices live on projects. Free = 1 project, Pro = N (project cap = plan).
+-- Brand voices live on projects. Free = 1 project, Creator = 3, Studio = 10 (project cap = plan).
 create table public.projects (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles(id) on delete cascade,
@@ -107,8 +107,8 @@ Public:
 - `POST /api/lemon/webhook` → HMAC-verify, handle events, always 200 (LS retries on non-2xx)
 
 Authed:
-- `GET /api/me` → `{ id, plan, totalGens, monthlyGens, monthStart, limit: { total: 3, monthly: 100, hourly: 10, projects: { free: 1, pro: 5 } }, projects: [{id, name, brain, imagePacks}], activeProjectId }`
-- `POST /api/projects` body `{name?}` → create (free ≤ 1, pro ≤ 5); returns project
+- `GET /api/me` → `{ id, plan, totalGens, monthlyGens, monthStart, limit: { total: 3, monthly: 100, monthlyStudio: 500, hourly: 10, projects: { free: 1, creator: 3, studio: 10, pro: 3 } }, projects: [{id, name, brain, imagePacks}], activeProjectId }`
+- `POST /api/projects` body `{name?}` → create (free ≤ 1, creator ≤ 3, studio ≤ 10); returns project
 - `GET /api/projects` → list user's projects
 - `PUT /api/projects/:id` body `{name?, brain?}` → rename / update brain (whitelist: niche, appName, appDescription, audience, styleMemory)
 - `DELETE /api/projects/:id` → remove project + its queue rows
@@ -153,9 +153,9 @@ Authed:
 Check before generating (single transaction to avoid races on counters):
 1. Load profile; resolve the requested `projectId` (must belong to the user).
 2. **Hourly anti-abuse (all tiers):** in-memory `Map<userId, timestamps[]>`; drop entries older than 60 min; if length ≥ 10 → 429. Hard cap enforced at the API route.
-3. **Free:** `total_gens >= 3` → 403 `"Free plan includes 3 lifetime generations. Upgrade to Pro."`
-4. **Pro:** if `month_start` < start of current calendar month → reset `monthly_gens=0`, `month_start=now()`. If `monthly_gens >= 100` (placeholder, config) → 403.
-5. Generate. **On success only:** `total_gens+1`, and for pro `monthly_gens+1`, then save. (Failed generations do not consume quota.)
+3. **Free:** `total_gens >= 3` → 403 `"Free plan includes 3 lifetime generations. Upgrade to Creator."`
+4. **Paid:** if `month_start` < start of current calendar month → reset `monthly_gens=0`, `month_start=now()`. If `monthly_gens >= cap` (creator 100 / studio 500, config) → 403.
+5. Generate. **On success only:** `total_gens+1`, and for paid `monthly_gens+1`, then save. (Failed generations do not consume quota.)
 6. Hourly limiter increments on attempt regardless (anti-abuse).
 
 Caps live behind a config object (`LIMITS`) so the real numbers are set before launch without code changes.
@@ -164,27 +164,27 @@ Caps live behind a config object (`LIMITS`) so the real numbers are set before l
 
 - Canvas **1080×1920**. Draw the slide's background image (via `/api/images/:id`) + a light scrim for text legibility. Background-only — text is added in TikTok's native font.
 - Buttons: **Download bg** per slide, **Download all** (all slides → `elion-slide-N.png`), **Copy text** per slide, **Copy all text** (`Slide 1: …\nSlide 2: …`).
-- **Watermark (free tier):** before `toDataURL`, draw `BRAND_NAME` diagonal, semi-transparent white (~14% alpha, large font, center band) across the canvas. Pro: skip. Client decides from `/api/me`.
+- **Watermark (free tier):** before `toDataURL`, draw `BRAND_NAME` diagonal, semi-transparent white (~14% alpha, large font, center band) across the canvas. Paid plans: skip. Client decides from `/api/me`.
 
 ## 12. Billing (`server/lemon.js`)
 
-- **Checkout:** `GET /api/upgrade-url` → `${LEMON_SQUEEZY_STORE_URL}/buy/${LEMON_SQUEEZY_VARIANT_ID}?checkout[custom][user_id]=${userId}` (annual uses `LEMON_SQUEEZY_VARIANT_ID_ANNUAL`). Client redirects.
+- **Checkout:** `GET /api/upgrade-url` → `${LEMON_SQUEEZY_STORE_URL}/buy/${LEMON_SQUEEZY_VARIANT_ID}?checkout[custom][user_id]=${userId}` (annual uses `LEMON_SQUEEZY_VARIANT_ID_ANNUAL`, studio uses `LEMON_SQUEEZY_VARIANT_ID_STUDIO[_ANNUAL]`). Client redirects.
 - **Webhook `POST /api/lemon/webhook`:** verify `X-Signature` = HMAC-SHA256 of the raw body with `LEMON_SQUEEZY_WEBHOOK_SECRET`. Parse event name from `meta.event_name`. Handle:
-  - `order_created`, `subscription_created`, `subscription_updated` → plan = `pro`, store `ls_subscription_id` (idempotent: match on subscription id).
+  - `order_created`, `subscription_created`, `subscription_updated` → plan by variant ID (`creator` or `studio`), store `ls_subscription_id` (idempotent: match on subscription id). Legacy `pro` rows are treated as `creator`.
   - `subscription_cancelled`, `subscription_expired` → plan = `free`.
   - Map user via `meta.custom_data.user_id` (fallback: `data.attributes.customer_email`).
-- `BillingView` shows plan + usage counters + Upgrade buttons (monthly $19 / annual $99) + "Already paid? Refresh".
+- `BillingView` shows plan + usage counters + Upgrade buttons for Creator (monthly $19 / annual $190) and Studio (monthly $49 / annual $490) + "Already paid? Refresh".
 
 ## 13. Frontend
 
 Routes (react-router):
-- `/` **Landing** — hero "Writes your carousel for you", product blurb, pricing (Free / Pro $19/mo or $99/yr), email signup, login link. Dark, on the Synthover palette.
+- `/` **Landing** — hero "Writes your carousel for you", product blurb, pricing (Free / Creator $19/mo or $190/yr / Studio $49/mo or $490/yr), email signup, login link. Dark, on the Synthover palette.
 - `/auth` **Auth** — sign up / sign in forms (mode toggle) using Supabase; on success → `/app`.
 - `/app` **AppShell** — protected (redirect to `/auth` if no session). Pinned sidebar matching the locked Synthover design: wordmark (real logo) · **Generate** (nav-style white row) · **Dashboard** · **Library** · **Brand Voice** · **Plan & Billing** · pinned bottom: free-plan widget (status + meter + Upgrade link), **Settings** · **Sign out** · account block. Active nav = text + icon turn blue, no bg.
   - **DashboardView** — empty state (new user) → skeleton loader (generating) → image-backed cards. Cards: slide-thumb filmstrip, status badge (Draft / Ready / Exported), hook, caption clamp, hashtag pills, Edit / Export / Delete. "Generate" opens the GenerateModal (count 1/3/5/10) → `POST /api/generate`. Error banners for 403/429 with upgrade CTA.
   - **LibraryView** — search + "Pull new" (`POST /api/library/pull`) + filter chips + image grid with pick state. "Use on slide" surfaces in the editor.
-  - **BrandVoiceView** — 5 fields for the active project (niche, app name, app description, audience, style memory), debounced autosave via `PUT /api/projects/:id`. Free = one project; Pro gets a project switcher + "New project".
-  - **BillingView** — current plan, usage (`totalGens/3` free; `monthlyGens/100` pro), Upgrade (monthly $19 / annual $99), refresh, plan gates on export watermark.
+  - **BrandVoiceView** — 5 fields for the active project (niche, app name, app description, audience, style memory), debounced autosave via `PUT /api/projects/:id`. Free = one project; paid plans get a project switcher + "New brand".
+  - **BillingView** — current plan, usage (`totalGens/3` free; `monthlyGens/100` creator; `monthlyGens/500` studio), Upgrade (Creator monthly $19 / annual $190; Studio monthly $49 / annual $490), refresh, plan gates on export watermark.
   - **SlideshowEditorModal** — tabs **Post** (caption + char count, hashtags), **Slides** (per-slide text, background swap from library / shuffle / Browse Library, delete slide if >1), **Export** (per-slide Download bg + Copy text, Download all backgrounds, Copy all text). Left: 9:16 preview with prev/next dots. Esc to close; backdrop dim + hairline panel (modal = the only elevated layer).
 - `/design1` — design exploration gallery (kept for reference; Synthover is the winner, not shipped).
 
@@ -205,8 +205,10 @@ Brand: `src/lib/brand.ts` → `export const BRAND_NAME = 'Elion'`; watermark + l
 | `APIFY_ACTOR_ID` | Pinterest search actor (default `fatihtahta/pinterest-scraper-search`) |
 | `LEMON_SQUEEZY_WEBHOOK_SECRET` | Webhook HMAC |
 | `LEMON_SQUEEZY_STORE_URL` | `https://<store>.lemonsqueezy.com` |
-| `LEMON_SQUEEZY_VARIANT_ID` | Pro monthly variant ($19/mo) |
-| `LEMON_SQUEEZY_VARIANT_ID_ANNUAL` | Pro annual variant ($99/yr) |
+| `LEMON_SQUEEZY_VARIANT_ID` | Creator monthly variant ($19/mo) |
+| `LEMON_SQUEEZY_VARIANT_ID_ANNUAL` | Creator annual variant ($190/yr) |
+| `LEMON_SQUEEZY_VARIANT_ID_STUDIO` | Studio monthly variant ($49/mo) |
+| `LEMON_SQUEEZY_VARIANT_ID_STUDIO_ANNUAL` | Studio annual variant ($490/yr) |
 | `APP_URL` | Public origin (landing links, redirects) |
 | `PORT` | Server port (Render sets this) |
 | `BRAND_NAME` | Optional override of brand.ts |
@@ -237,8 +239,8 @@ Frontend reads `VITE_*` via `import.meta.env` (only non-secret: `VITE_SUPABASE_U
 
 - "Elion" has namesakes in other categories (Elion Health, an "Elion AI" agents platform, ELION voice agents, elion.media). Different markets — usable, but the brand work must own the content-creation lane. **Domain `elion.ai` availability: OPEN.**
 - **Model (locked 2026-08-05):** **`big-pickle`** on **OpenCode Zen** (`https://opencode.ai/zen/v1`) is the generation model, the free model, verified live. Other OpenCode models available: `glm-5`, `glm-5.1`, `glm-5.2`, plus claude/gemini/gpt families. OpenRouter is retired. Driven entirely by env (`OPENCODE_MODEL`); never hardcode a model name in code. Inference cost is the margin lever.
-- **Pro cap + project model (decided):** Pro is NOT unlimited (can't afford it at launch). Pro = 100 slideshows/month (placeholder) + multiple brand projects, each with its own Brain; free = 1 project, 3 lifetime gens. Exact caps are placeholders — set real numbers before launch, behind the `LIMITS` config.
-- **Margin math (pre-launch, PRD §6):** real per-generation cost (OpenCode + Apify amortized across pooled backgrounds + storage/bandwidth) must leave margin at $19/100. Pooling is required; if fresh-per-gen, lower the cap.
+- **Plan caps + project model (locked 2026-08-06):** no plan is unlimited. Creator = 100 slideshows/month (placeholder) + 3 brand projects (each with its own Brain); Studio = 500 slideshows/month (placeholder) + 10 brand projects; free = 1 project, 3 lifetime gens. Legacy `pro` profiles are treated as Creator. Exact caps are placeholders — set real numbers before launch, behind the `LIMITS` config.
+- **Margin math (pre-launch, PRD §6):** real per-generation cost (OpenCode + Apify amortized across pooled backgrounds + storage/bandwidth) must leave margin at Creator $19/100 and Studio $49/500. Pooling is required; if fresh-per-gen, lower the cap.
 - **Canvas taint:** all background images load same-origin through `/api/images/:hash`; never render from a cross-origin URL into the export canvas.
 - Client-side watermark is accepted for MVP (v2 = server-side).
 - No em dashes in any user-facing string. Slideshows / slides, never "carousels".

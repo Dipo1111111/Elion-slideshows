@@ -129,7 +129,7 @@ export default function Auth() {
           </div>
         </div>
 
-        <p className="text-[12.5px] text-[#8E8E93]">Free to start. 3 slideshows, then $19/mo for Pro.</p>
+        <p className="text-[12.5px] text-[#8E8E93]">Free to start. 3 lifetime slideshows, then Creator from $19/mo.</p>
       </aside>
 
       <section className="flex w-full items-center justify-center p-8 sm:p-10 lg:px-14 lg:py-8">

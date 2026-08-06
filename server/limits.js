@@ -55,7 +55,7 @@ export function remainingFor(profile) {
 // Throws 403 when the plan cap is already exhausted.
 export async function assertCanGenerate(profile) {
   if (profile.plan === 'free' && (profile.total_gens || 0) >= LIMITS.total) {
-    throw new HttpError(403, 'Free plan includes 3 lifetime generations. Upgrade to Pro.')
+    throw new HttpError(403, 'Free plan includes 3 lifetime generations. Upgrade to Creator.')
   }
   if (profile.plan !== 'free' && remainingFor(profile) <= 0) {
     throw new HttpError(403, 'You have used all your slideshows this month. Upgrade or wait for the next cycle.')

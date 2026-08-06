@@ -2,7 +2,7 @@
 // corner of every exported background. Deliberately tiny and discreet. The
 // 3-lifetime cap is what converts free users (they cannot make a 4th slideshow),
 // so the mark's only job is brand exposure on free posts, never blocking them.
-// Pro skips it. This is the only watermark in the product.
+// Paid plans skip it. This is the only watermark in the product.
 import { BRAND_NAME } from './brand'
 
 const CORNER_PAD = 40 // px from the bottom-right edge on the 1080px export canvas

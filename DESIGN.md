@@ -67,7 +67,7 @@ Every color that appears in the locked design. Grouped by role.
 | `#1F2026` | editor modal divider (preview border-r, tab-bar/footer border-b) |
 | `#1F212B` | input hairline, inactive filter/count-pill border, export-row border |
 | `#22242D` | modal border (Generate + Editor panels) |
-| `#262834` | chip hairline (Draft/Exported chips, feature chips, "or $99/yr"), avatar border, prev/next border |
+| `#262834` | chip hairline (Draft/Exported chips, feature chips, "or $190/yr"), avatar border, prev/next border |
 | `#282B33` | prev/next hover background |
 | `#2E3140` | **hairline-strong.** QuietButton border, card hover border |
 
@@ -77,7 +77,7 @@ Every color that appears in the locked design. Grouped by role.
 |---|---|
 | `#FFFFFF` | pure white. MintButton ink, Ready-chip ink + dot, active nav dot, check marks, slide index |
 | `#F2F4F7` | hook line on cards |
-| `#E5E7EB` | **primary ink.** Root text, field values, style-memory text, export-row text, prices, Pro list |
+| `#E5E7EB` | **primary ink.** Root text, field values, style-memory text, export-row text, prices, Creator list |
 | `#D1D5DB` | secondary text. QuietButton ink, Free-plan list text |
 | `#9CA0A8` | muted/faint. Labels, captions, subtitles, meta-ish text, chip ink, helper text |
 | `#8E8E93` | meta, inactive filter/count ink, prev/next counter, close icon, editor delete/shuffle link ink |
@@ -93,7 +93,7 @@ Every color that appears in the locked design. Grouped by role.
 | `#3B82F6` | accent. **Solid only for data marks** (usage-meter fill, library check, active nav dot) **and text** (links, active nav). Everything else is glass. |
 | `#6FA1FF` | accent hover. Links, active-nav hover, Generate-row hover |
 | `bg-[#3B82F6]/20` | accent glass fill. Ready chip, Current chip, active count pill, active filter, active editor tab, export index tiles, brand-strip icon tile active |
-| `border-[#3B82F6]/40` | Pro card border |
+| `border-[#3B82F6]/40` | Creator card border |
 | `border-[#3B82F6]/60` | library picked-image border |
 | `ring-2 ring-[#3B82F6]` | editor background-override selection ring |
 
@@ -159,7 +159,7 @@ Sizes are absolute pixels via arbitrary values (`text-[13px]`). Do not change si
 | QuietButton | `text-[12px] font-semibold` |
 | StatusChip | `text-[11px] font-bold` |
 | Hashtag chip | `text-[11px] font-medium` |
-| Feature chip / "or $99/yr" / Current | `text-[11px] font-bold` |
+| Feature chip / "or $190/yr" / Current | `text-[11px] font-bold` |
 | Filter chip / editor tab | `text-[12px] font-semibold` |
 | Field label | `text-[11px] font-semibold text-[#9CA0A8]` |
 | Modal field label | `text-[11px] font-bold text-[#9CA0A8]` |
@@ -183,7 +183,7 @@ Sizes are absolute pixels via arbitrary values (`text-[13px]`). Do not change si
 | Generate-modal cost line | `mt-3 text-[11.5px] font-medium text-[#8E8E93]` |
 | Export-tab intro | `text-[12px] leading-relaxed text-[#9CA0A8]` |
 | Library hover label | `text-[11px] font-semibold text-white` |
-| Billing list | `text-[13px]` (`#D1D5DB` on Free, `#E5E7EB` on Pro) |
+| Billing list | `text-[13px]` (`#D1D5DB` on Free, `#E5E7EB` on Creator/Studio) |
 | Export row slide text | `min-w-0 flex-1 truncate text-[12px] text-[#E5E7EB]` |
 
 **`font-num` is ONLY for:** prices, slide indices, usage figures, count pills, prev/next counter,
@@ -193,7 +193,7 @@ export index tiles. Never for labels or body.
 
 | Role | Radius | Used on |
 |---|---|---|
-| Pill | `rounded-full` | MintButton, QuietButton, StatusChip, hashtag chips, feature chips, filter chips, editor tabs, prev/next buttons, nav dots, Current chip, "or $99/yr" chip, delete button, usage-meter track + fill, library check, avatar |
+| Pill | `rounded-full` | MintButton, QuietButton, StatusChip, hashtag chips, feature chips, filter chips, editor tabs, prev/next buttons, nav dots, Current chip, "or $190/yr" chip, delete button, usage-meter track + fill, library check, avatar |
 | Modal | `rounded-2xl` | GenerateModal panel, EditorModal panel |
 | Card | `rounded-xl` | slideshow cards, empty-state section, plan widget, Brand sections, Library image cards, Brand strip, Billing cards |
 | Control | `rounded-lg` | nav rows, Generate row, Settings/Sign-out rows, inputs, fields, SlideThumb, Shimmer, count pills, export rows, export index tiles, editor background thumbs, brand-strip icon tile |
@@ -414,8 +414,9 @@ Page title + subtitle; "Your brand" section (Field grid: Niche, App name, Audien
 "Style memory" section (pre-line read-only box). Single column, no cards-within-cards.
 
 ### Plan & Billing (`max-w-[720px]`)
-Page title ("Simple. Just the two plans.") + subtitle; two cards side by side (Free hairline +
-Current chip; Pro blue hairline + "or $99/yr" chip). Pro card ends with full-width MintButton.
+Page title + subtitle; three columns side by side (Free hairline + Current chip; Creator blue
+hairline + "or $190/yr" chip; Studio hairline). Creator and Studio cards end with full-width
+MintButton. See §11 item 6 (three-tier pricing deviation).
 
 ### GenerateModal
 Backdrop `bg-black/80 backdrop-blur-xs`; panel `max-w-md rounded-2xl border-[#22242D] shadow-2xl`;
