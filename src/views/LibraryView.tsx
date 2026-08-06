@@ -2,7 +2,7 @@
 // (comma-separated searches + a Max count, min 10 / default 10 / up to 40)
 // pulls batches that become named packs, grouped below with per-image delete.
 // Generation draws from these packs, so this is the one visible pull step.
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Download, Images, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { api, ApiError, imageUrl } from '@/lib/api'
@@ -23,8 +23,16 @@ export default function LibraryView() {
   const [busy, setBusy] = useState(false)
   const [note, setNote] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // Local pool is the grid source so deletions are optimistic. Re-seed it only
+  // when the active project changes, never on every /api/me refresh.
+  const [pool, setPool] = useState(activeProject?.imagePacks ?? [])
+  const [removing, setRemoving] = useState<Set<string>>(new Set())
 
-  const pool = activeProject?.imagePacks ?? []
+  useEffect(() => {
+    setPool(activeProject?.imagePacks ?? [])
+    setRemoving(new Set())
+  }, [activeProject?.id])
+
   const niche = activeProject?.brain?.niche?.trim() || activeProject?.name?.trim() || 'your brand'
 
   // One group per pack (the search label that named it), like the reference
@@ -57,6 +65,7 @@ export default function LibraryView() {
     const label = terms.join(', ') || niche
     try {
       const { entries } = await api.pullImages({ projectId: activeProject.id, searches: terms.join(', '), count })
+      if (entries.length) setPool((prev) => [...prev, ...entries])
       setNote(
         entries.length
           ? `Added ${entries.length} image${entries.length === 1 ? '' : 's'} to "${entries[0]?.pack || label}".`
@@ -71,12 +80,28 @@ export default function LibraryView() {
   }
 
   const remove = async (id: string) => {
-    if (!activeProject) return
+    if (!activeProject || removing.has(id)) return
+    // Optimistic: play the exit animation immediately, then drop the card once
+    // it has played. No success toast, the card leaving is the feedback.
+    setRemoving((prev) => new Set(prev).add(id))
     try {
       await api.deleteLibraryImage(id, activeProject.id)
-      toast.success('Background removed.')
+      setTimeout(() => {
+        setPool((prev) => prev.filter((e) => e.id !== id))
+        setRemoving((prev) => {
+          const next = new Set(prev)
+          next.delete(id)
+          return next
+        })
+      }, 180)
       await refreshMe()
     } catch (err) {
+      // Restore the card and say why.
+      setRemoving((prev) => {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      })
       toast.error(err instanceof ApiError ? err.message : 'Could not remove this background.')
     }
   }
@@ -178,7 +203,7 @@ export default function LibraryView() {
                 {imgs.map((entry) => (
                   <div
                     key={entry.id}
-                    className="group relative aspect-[9/16] overflow-hidden rounded-lg border border-[#1E2028]"
+                    className={`group relative aspect-[9/16] overflow-hidden rounded-lg border border-[#1E2028] ${removing.has(entry.id) ? 'card-out' : ''}`}
                   >
                     <img
                       src={imageUrl(entry)}

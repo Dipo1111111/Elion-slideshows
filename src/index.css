@@ -375,6 +375,23 @@
   }
 }
 
+@keyframes card-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .card-out {
+    animation: card-out 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+    pointer-events: none;
+  }
+}
+
 @keyframes tab-fade {
   from {
     opacity: 0;
