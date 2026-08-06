@@ -2,12 +2,14 @@
 // (comma-separated searches + a Max count, min 10 / default 10 / up to 40)
 // pulls batches that become named packs, grouped below with per-image delete.
 // Generation draws from these packs, so this is the one visible pull step.
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Download, Images, Trash2 } from 'lucide-react'
+import { gsap } from 'gsap'
 import { toast } from 'sonner'
 import { api, ApiError, imageUrl } from '@/lib/api'
 import { useMe } from '@/lib/me'
-import { FOCUS, MintButton } from '@/components/primitives'
+import type { ImageEntry } from '@/lib/types'
+import { FOCUS, MintButton, Shimmer } from '@/components/primitives'
 
 const PULL_MIN = 10
 const PULL_MAX = 40
@@ -17,28 +19,34 @@ const PULL_DEFAULT = 10
 const EXAMPLES = ['Minimalist home decor', 'Gym motivation', 'Cozy fall']
 
 export default function LibraryView() {
-  const { activeProject, refreshMe } = useMe()
+  const { activeProject, refreshMe, meLoading } = useMe()
   const [searches, setSearches] = useState('')
   const [count, setCount] = useState(PULL_DEFAULT)
   const [busy, setBusy] = useState(false)
   const [note, setNote] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  // Local pool is the grid source so deletions are optimistic. Re-seed it only
-  // when the active project changes, never on every /api/me refresh.
-  const [pool, setPool] = useState(activeProject?.imagePacks ?? [])
+  // Local pool is the grid source so deletions are optimistic. null means "not
+  // synced yet" so the grid can show a skeleton instead of flashing the empty
+  // state. Seeded from the cached project on tab switches; synced after /me.
+  const [pool, setPool] = useState<ImageEntry[] | null>(activeProject?.imagePacks ?? null)
   const [removing, setRemoving] = useState<Set<string>>(new Set())
+  const gridRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    // Don't claim "empty" while /me is still loading: the project isn't known
+    // yet, and the empty state would flash before the real library arrives.
+    if (meLoading) return
     setPool(activeProject?.imagePacks ?? [])
     setRemoving(new Set())
-  }, [activeProject?.id])
+  }, [activeProject?.id, meLoading])
 
   const niche = activeProject?.brain?.niche?.trim() || activeProject?.name?.trim() || 'your brand'
 
   // One group per pack (the search label that named it), like the reference
   // library. Entries without a stored pack fold into the niche group.
   const groups = useMemo(() => {
-    const map = new Map<string, typeof pool>()
+    if (!pool) return []
+    const map = new Map<string, ImageEntry[]>()
     for (const entry of pool) {
       const key = entry.pack || entry.query || niche
       if (!map.has(key)) map.set(key, [])
@@ -65,7 +73,7 @@ export default function LibraryView() {
     const label = terms.join(', ') || niche
     try {
       const { entries } = await api.pullImages({ projectId: activeProject.id, searches: terms.join(', '), count })
-      if (entries.length) setPool((prev) => [...prev, ...entries])
+      if (entries.length) setPool((prev) => [...(prev ?? []), ...entries])
       setNote(
         entries.length
           ? `Added ${entries.length} image${entries.length === 1 ? '' : 's'} to "${entries[0]?.pack || label}".`
@@ -81,26 +89,50 @@ export default function LibraryView() {
 
   const remove = async (id: string) => {
     if (!activeProject || removing.has(id)) return
-    // Optimistic: play the exit animation immediately, then drop the card once
-    // it has played. No success toast, the card leaving is the feedback.
+    const entry = pool?.find((e) => e.id === id)
+    if (!entry) return
+    const originalIndex = pool?.findIndex((e) => e.id === id) ?? -1
+    // Optimistic: play the exit animation (card-out), then drop the card from
+    // the grid the moment the exit ends, before the server round trip, so a
+    // slow request never leaves a fading ghost holding an empty slot.
     setRemoving((prev) => new Set(prev).add(id))
-    try {
-      await api.deleteLibraryImage(id, activeProject.id)
-      setTimeout(() => {
-        setPool((prev) => prev.filter((e) => e.id !== id))
-        setRemoving((prev) => {
-          const next = new Set(prev)
-          next.delete(id)
-          return next
-        })
-      }, 180)
-      await refreshMe()
-    } catch (err) {
-      // Restore the card and say why.
+    window.setTimeout(() => {
+      // FLIP: record where every card sits, remove the target, then glide the
+      // survivors into the freed slots instead of snapping.
+      const cells = gridRef.current
+      const before = new Map<Element, DOMRect>()
+      cells?.querySelectorAll('[data-lib-card]').forEach((el) => before.set(el, el.getBoundingClientRect()))
+      setPool((prev) => (prev ?? []).filter((e) => e.id !== id))
       setRemoving((prev) => {
         const next = new Set(prev)
         next.delete(id)
         return next
+      })
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+          cells?.querySelectorAll('[data-lib-card]').forEach((el) => {
+            const old = before.get(el)
+            if (!old) return
+            const now = el.getBoundingClientRect()
+            const dx = old.left - now.left
+            const dy = old.top - now.top
+            if (dx || dy) {
+              gsap.fromTo(el, { x: dx, y: dy }, { x: 0, y: 0, duration: 0.3, ease: 'power3.out', overwrite: 'auto' })
+            }
+          })
+        }),
+      )
+    }, 190)
+    try {
+      await api.deleteLibraryImage(id, activeProject.id)
+      void refreshMe()
+    } catch (err) {
+      // Restore the card in its original slot and say why.
+      setPool((prev) => {
+        if (!prev || prev.some((e) => e.id === id)) return prev
+        const at = Math.max(0, Math.min(originalIndex, prev.length))
+        return [...prev.slice(0, at), entry, ...prev.slice(at)]
       })
       toast.error(err instanceof ApiError ? err.message : 'Could not remove this background.')
     }
@@ -151,8 +183,14 @@ export default function LibraryView() {
         {error && <p className="mt-2.5 text-[12px] font-medium text-[#F4877E]">{error}</p>}
       </div>
 
-      {pool.length === 0 ? (
-        <section className="mt-6 flex flex-col items-center rounded-xl border border-[#1E2028] px-6 py-14 text-center">
+      {meLoading || pool === null ? (
+        <section className="mt-6 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+          {Array.from({ length: 12 }, (_, i) => (
+            <Shimmer key={i} className="aspect-[9/16] w-full rounded-lg" />
+          ))}
+        </section>
+      ) : pool.length === 0 ? (
+        <section className="fade-in mt-6 flex flex-col items-center rounded-xl border border-[#1E2028] px-6 py-14 text-center">
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
             <Images className="h-5 w-5 text-white" strokeWidth={1.5} />
           </span>
@@ -190,7 +228,7 @@ export default function LibraryView() {
           </MintButton>
         </section>
       ) : (
-        <div className="mt-6 space-y-8">
+        <div ref={gridRef} className="fade-in mt-6 space-y-8">
           {groups.map(([pack, imgs]) => (
             <section key={pack}>
               <div className="mb-2.5 flex items-baseline justify-between">
@@ -203,7 +241,8 @@ export default function LibraryView() {
                 {imgs.map((entry) => (
                   <div
                     key={entry.id}
-                    className={`group relative aspect-[9/16] overflow-hidden rounded-lg border border-[#1E2028] ${removing.has(entry.id) ? 'card-out' : ''}`}
+                    data-lib-card
+                    className={`group relative aspect-[9/16] overflow-hidden rounded-lg border border-[#1E2028] bg-[#0C0D10] ${removing.has(entry.id) ? 'card-out' : ''}`}
                   >
                     <img
                       src={imageUrl(entry)}

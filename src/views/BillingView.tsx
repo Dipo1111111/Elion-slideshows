@@ -9,10 +9,10 @@ import { toast } from 'sonner'
 import { api, ApiError } from '@/lib/api'
 import { BRAND_NAME } from '@/lib/brand'
 import { useMe } from '@/lib/me'
-import { FOCUS, MintButton } from '@/components/primitives'
+import { FOCUS, MintButton, Shimmer } from '@/components/primitives'
 
 export default function BillingView() {
-  const { me } = useMe()
+  const { me, meLoading } = useMe()
   const [busy, setBusy] = useState(false)
   const plan = me?.plan ?? 'free'
   const isCreator = plan === 'creator' || plan === 'pro'
@@ -33,6 +33,24 @@ export default function BillingView() {
     } finally {
       setBusy(false)
     }
+  }
+
+  // Skeleton while /me loads so the page never shows "Free / 0 of 3 used"
+  // before the real plan and usage arrive, then flips.
+  if (meLoading) {
+    return (
+      <div className="mx-auto w-full max-w-[900px] px-6 py-8">
+        <header className="mb-7">
+          <Shimmer className="h-8 w-72 rounded-lg" />
+          <Shimmer className="mt-2.5 h-4 w-44 rounded-lg" />
+        </header>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <Shimmer key={i} className="h-96 w-full rounded-xl" />
+          ))}
+        </div>
+      </div>
+    )
   }
 
   const freeRows: [string, string][] = [

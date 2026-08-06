@@ -2,9 +2,9 @@
 
 > Tick boxes as work completes. Header shows current milestone + next action. Phases must be done in order.
 
-**Current milestone:** **DEPLOYED + LIVE 2026-08-06**: https://elion-ix26.onrender.com (auto-deploy via Render Deploy Hook). Pinterest pulls curated (resolution + dedupe gate, parallel downloads, search expansion), Library delete animation fixed, **Phase 11 security hardening COMPLETE**, **plan margin math DONE** (~98% margin at caps; pulls rate-limited 6/hr as the one cost leak), domain check checked off. Remaining before launch: Playwright E2E; Lemon Squeezy store finish (ON HOLD until LS verification; ask user when verified); trademark clearance (user to decide keep/drop).
+**Current milestone:** **DEPLOYED + LIVE 2026-08-06**: https://elion-ix26.onrender.com (auto-deploy via Render Deploy Hook). Pinterest pulls curated (resolution + dedupe gate, parallel downloads, search expansion), Library delete animation fixed, **Phase 11 security hardening COMPLETE**, **plan margin math DONE** (~98% margin at caps; pulls rate-limited 6/hr as the one cost leak), domain check checked off. **UI/UX polish DONE 2026-08-06**: editor phone preview shows slide script text, skeleton loaders on every content tab (never flash empty state), Library delete FLIPs the grid instead of snap. Remaining before launch: Playwright E2E; Lemon Squeezy store finish (ON HOLD until LS verification; ask user when verified).
 **Last updated:** 2026-08-06
-**Next action:** Playwright E2E (BUILD_PLAN §16) — signup → brain → generate → edit → swap background → export (watermark logic) → upgrade via webhook → clean export → limits (403/429). Then Lemon Squeezy store finish (ask user first, on hold pending LS verification) and trademark clearance decision.
+**Next action:** Playwright E2E (BUILD_PLAN §16) — signup → brain → generate → edit → swap background → export (watermark logic) → upgrade via webhook → clean export → limits (403/429). Then Lemon Squeezy store finish (ask user first, on hold pending LS verification).
 
 ---
 
@@ -194,7 +194,7 @@
 - [x] **Supabase ALTER (done, user 2026-08-06):** live `profiles` table now accepts `plan in ('free','creator','studio','pro')`; `supabase/schema.sql` already updated.
 - [ ] **Lemon Squeezy store finish (user, in LS dashboard):** point webhook callback URL at `https://elion-ix26.onrender.com/api/lemon/webhook`; publish Creator + Studio products (checkout live); set up payout account; run a real checkout → webhook → plan-flip test. Backend is done and verified. **NOTE (2026-08-06):** ON HOLD until Lemon Squeezy completes and verifies their store/account verification. When that verification is done, ASK the user before continuing the activation steps (don't proceed on your own).
 - [x] **Domain check** `elion.ai` availability — checked off by user 2026-08-06 (not blocking launch; ship on the current Render URL)
-- [ ] Trademark clearance for "Elion" (legal check: whether the name is already trademarked/registered by someone else in the content-creation category, to avoid a trademark dispute after launch). Informational; brand owns the lane. Ask the user if they want to keep this item or drop it.
+- [x] **Trademark clearance — DROPPED (user 2026-08-06).** ELION is a registered US mark held by several non-competing companies (most relevantly Elion Inc of Menlo Park CA, a health IT intelligence platform; plus Elion International, Elion LLC, Fluke Corporation). Product verticals differ enough that it's not a pre-launch blocker: the app ships on a Render subdomain with no custom domain and no revenue yet. Nothing to lose now; revisit only if the user invests in a custom domain or real brand growth.
 - [ ] Post-launch: Claude Haiku model swap, stock background packs, server-side watermark (v2)
 
 ## Done / shipped

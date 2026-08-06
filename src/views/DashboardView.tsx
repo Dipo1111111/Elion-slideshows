@@ -61,6 +61,7 @@ export default function DashboardView() {
   const { meLoading, activeProject } = useMe()
   const { generating, pendingCount, reloadKey, openModal } = useGenerate()
   const [slideshows, setSlideshows] = useState<Slideshow[] | null>(null)
+  const [fetching, setFetching] = useState(false)
   const [editing, setEditing] = useState<{ slideshow: Slideshow; tab: EditorTab } | null>(null)
 
   const refresh = useCallback(async () => {
@@ -68,16 +69,26 @@ export default function DashboardView() {
       setSlideshows([])
       return
     }
+    setFetching(true)
     try {
       setSlideshows(await api.queue(activeProject.id))
     } catch (err) {
+      // Fall back to the empty state so a failed first fetch never strands the
+      // user on a skeleton; the toast above explains what went wrong.
+      setSlideshows([])
       toast.error(err instanceof ApiError ? err.message : 'Could not load your slideshows.')
+    } finally {
+      setFetching(false)
     }
   }, [activeProject?.id])
 
   useEffect(() => {
+    // Never touch slideshows while /me is still loading: the refresh below
+    // would otherwise mark the queue "empty" before the real project is known,
+    // flashing the empty state over a working account.
+    if (meLoading) return
     void refresh()
-  }, [refresh, reloadKey])
+  }, [refresh, reloadKey, meLoading])
 
   const remove = async (slideshow: Slideshow) => {
     try {
@@ -91,10 +102,14 @@ export default function DashboardView() {
 
   const tuneBrand = () => navigate('/app/brand')
 
-  if (meLoading) {
+  // Skeleton until the queue resolves: slideshows is null both while /me loads
+  // and while the queue fetch runs. A refetch over an empty list (right after
+  // the first generation) also stays on the skeleton, so the empty state never
+  // renders mid-load. A refetch over existing cards keeps them visible.
+  if (meLoading || slideshows === null || (fetching && slideshows.length === 0)) {
     return (
       <div className="mx-auto w-full max-w-[880px] px-6 py-8">
-        <GreetingHeader line={<>Let's create your first {blueSlideshow}.</>} />
+        <GreetingHeader line={<>Loading your slideshows.</>} />
         <div className="mb-4">
           <h2 className="font-display text-[16px] font-bold text-white">Your slideshows</h2>
         </div>
@@ -124,7 +139,7 @@ export default function DashboardView() {
     )
   }
 
-  if (!slideshows || slideshows.length === 0) {
+  if (slideshows.length === 0) {
     return (
       <div className="mx-auto w-full max-w-[880px] px-6 py-8">
         <GreetingHeader line={<>Let's create your first {blueSlideshow}.</>} />

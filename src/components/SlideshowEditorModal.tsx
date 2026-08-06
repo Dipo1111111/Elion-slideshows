@@ -132,9 +132,13 @@ export function SlideshowEditorModal({
                 className="fade-in absolute inset-0 h-full w-full object-cover"
               />
             )}
-            <div className="absolute inset-0 bg-black/20" />
-            <span className="absolute inset-0 flex items-center justify-center font-num text-[10px] font-bold text-white/90 drop-shadow">
-              {index + 1}
+            {/* Legibility scrim, heavier at the bottom where the script sits. */}
+            <div className="absolute inset-0 bg-black/25" />
+            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent" />
+            <span className="absolute inset-x-0 bottom-0 flex flex-col justify-end p-3">
+              <span className="line-clamp-6 whitespace-pre-line text-[10px] font-semibold leading-snug text-white drop-shadow">
+                {draft.slides[index]?.text || `Slide ${index + 1}`}
+              </span>
             </span>
           </div>
           <div className="flex items-center gap-3">
