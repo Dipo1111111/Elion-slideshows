@@ -81,13 +81,29 @@ function picsumEntries({ queries, count = PULL_DEFAULT, pack }) {
 
 async function uploadToStorage(url) {
   const id = sha256(url)
-  const res = await fetch(url, { headers: IMG_FETCH_HEADERS })
-  if (!res.ok) return null
+  const log = `[images] ${url.slice(0, 80)}`
+  let res
+  try {
+    res = await fetch(url, { headers: IMG_FETCH_HEADERS, signal: AbortSignal.timeout(20_000) })
+  } catch (err) {
+    console.error(`${log}: download ${err.name === 'TimeoutError' ? 'timed out' : `failed (${err.message})`}`)
+    return null
+  }
+  if (!res.ok) {
+    console.error(`${log}: download rejected HTTP ${res.status}`)
+    return null
+  }
   const bytes = Buffer.from(await res.arrayBuffer())
-  if (bytes.length < 1024) return null // skip tiny placeholders
+  if (bytes.length < 1024) {
+    console.error(`${log}: download too small (${bytes.length}B)`)
+    return null
+  }
   const type = res.headers.get('content-type') || 'image/jpeg'
   const { error } = await sb.storage.from(BUCKET).upload(id, bytes, { contentType: type, upsert: true })
-  if (error) return null
+  if (error) {
+    console.error(`${log}: storage upload failed (${error.message})`)
+    return null
+  }
   return { id, url, pulledAt: new Date().toISOString() }
 }
 
@@ -110,6 +126,14 @@ async function apifyPull({ queries, limit, pack }) {
     const stored = await uploadToStorage(url)
     if (stored) entries.push({ ...stored, query: queries.join(', '), pack })
   }
+  if (urls.length > 0 && entries.length === 0) {
+    console.error(`[images] pull "${pack}": found ${urls.length} pins, saved 0`)
+    throw new HttpError(
+      502,
+      `Pinterest returned ${urls.length} images, but none could be downloaded and saved. Pinterest often blocks cloud servers; try again in a few minutes.`,
+    )
+  }
+  console.log(`[images] pull "${pack}": saved ${entries.length}/${urls.length}`)
   return entries
 }
 
