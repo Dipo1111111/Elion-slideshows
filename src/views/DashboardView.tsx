@@ -62,11 +62,17 @@ export default function DashboardView() {
   const { generating, pendingCount, reloadKey, openModal } = useGenerate()
   const [slideshows, setSlideshows] = useState<Slideshow[] | null>(null)
   const [fetching, setFetching] = useState(false)
+  // Which generation epoch the queue is synced to. reloadKey bumps when a
+  // generation finishes; until the next fetch resolves, the queue is stale
+  // (often still empty), so syncedKey !== reloadKey holds the skeleton and the
+  // empty state never flashes in that gap. DESIGN.md-independent: motion of state.
+  const [syncedKey, setSyncedKey] = useState(() => reloadKey)
   const [editing, setEditing] = useState<{ slideshow: Slideshow; tab: EditorTab } | null>(null)
 
   const refresh = useCallback(async () => {
     if (!activeProject) {
       setSlideshows([])
+      setSyncedKey(reloadKey)
       return
     }
     setFetching(true)
@@ -79,8 +85,9 @@ export default function DashboardView() {
       toast.error(err instanceof ApiError ? err.message : 'Could not load your slideshows.')
     } finally {
       setFetching(false)
+      setSyncedKey(reloadKey)
     }
-  }, [activeProject?.id])
+  }, [activeProject?.id, reloadKey])
 
   useEffect(() => {
     // Never touch slideshows while /me is still loading: the refresh below
@@ -102,25 +109,11 @@ export default function DashboardView() {
 
   const tuneBrand = () => navigate('/app/brand')
 
-  // Skeleton until the queue resolves: slideshows is null both while /me loads
-  // and while the queue fetch runs. A refetch over an empty list (right after
-  // the first generation) also stays on the skeleton, so the empty state never
-  // renders mid-load. A refetch over existing cards keeps them visible.
-  if (meLoading || slideshows === null || (fetching && slideshows.length === 0)) {
-    return (
-      <div className="mx-auto w-full max-w-[880px] px-6 py-8">
-        <GreetingHeader line={<>Loading your slideshows.</>} />
-        <div className="mb-4">
-          <h2 className="font-display text-[16px] font-bold text-white">Your slideshows</h2>
-        </div>
-        <div className="space-y-4">
-          <SkeletonCard />
-          <SkeletonCard />
-        </div>
-      </div>
-    )
-  }
-
+  // Generating leads so the "Writing your scripts" skeleton shows even when a
+  // fresh mount has no queue yet. After it flips off, the queue is stale until
+  // the reloadKey-driven refetch lands, so syncedKey !== reloadKey holds the
+  // skeleton through that gap too: the empty state only ever renders once a
+  // fetch has genuinely returned an empty list.
   if (generating) {
     return (
       <div className="mx-auto w-full max-w-[880px] px-6 py-8">
@@ -130,6 +123,21 @@ export default function DashboardView() {
           <p className="mt-1 text-[12px] font-medium text-[#9CA0A8]">
             Writing {pendingCount} slideshows for {activeProject?.name ?? 'your brand'}...
           </p>
+        </div>
+        <div className="space-y-4">
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      </div>
+    )
+  }
+
+  if (meLoading || slideshows === null || syncedKey !== reloadKey || (fetching && slideshows.length === 0)) {
+    return (
+      <div className="mx-auto w-full max-w-[880px] px-6 py-8">
+        <GreetingHeader line={<>Loading your slideshows.</>} />
+        <div className="mb-4">
+          <h2 className="font-display text-[16px] font-bold text-white">Your slideshows</h2>
         </div>
         <div className="space-y-4">
           <SkeletonCard />

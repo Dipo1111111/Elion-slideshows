@@ -453,6 +453,11 @@ text, Copy, Image) + Download all / Copy all text.
    three columns: Free · Creator $19/mo ($190/yr) · Studio $49/mo ($490/yr). Billing copy, the
    UsageWidget label, and plan names render Creator/Studio; the blue-highlighted card is Creator.
    Everything else in the Billing recipe is unchanged.
+7. **Slide thumbs show script text, not the index numeral.** The SlideThumb recipe pins a centered
+   `font-num` numeral (user request 2026-08-06). Product cards (featured `w-24` + grid `w-12`) now
+   render the slide's script text bottom-anchored over the photo with the legibility gradient, same
+   anatomy as the editor phone preview: `text-[9px]` on featured thumbs, `text-[7px]` on grid thumbs,
+   `line-clamp-4`. The numeral is retained as the fallback wherever no text exists (Auth demo thumbs).
 
 Everything else: every color, size, radius, spacing, font, icon, hover state, transition, and copy
 string is fixed by this document. No restyling. No iteration on the look. Build it to look exactly

@@ -74,7 +74,7 @@ function ThumbStrip({ slideshow, size }: { slideshow: Slideshow; size: 'lg' | 's
     return (
       <div className="flex shrink-0 items-center gap-2 bg-[#0C0D10] p-4">
         {thumbs.map((slide, j) => (
-          <SlideThumb key={slide.id} image={imageUrl(slide.bg)} index={j + 1} className="w-24" />
+          <SlideThumb key={slide.id} image={imageUrl(slide.bg)} index={j + 1} label={slide.text} labelSize="lg" className="w-24" />
         ))}
         {more > 0 && <span className="pl-1 text-[11px] font-semibold text-[#7C838C]">+{more} more</span>}
       </div>
@@ -83,7 +83,7 @@ function ThumbStrip({ slideshow, size }: { slideshow: Slideshow; size: 'lg' | 's
   return (
     <div className="flex gap-2 bg-[#0C0D10] px-4 py-3">
       {thumbs.map((slide, j) => (
-        <SlideThumb key={slide.id} image={imageUrl(slide.bg)} index={j + 1} className="w-12" />
+        <SlideThumb key={slide.id} image={imageUrl(slide.bg)} index={j + 1} label={slide.text} className="w-12" />
       ))}
       {more > 0 && (
         <span className="ml-auto flex items-center self-end pb-0.5 text-[11px] font-semibold text-[#7C838C]">

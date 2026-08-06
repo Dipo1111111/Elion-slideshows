@@ -13,23 +13,40 @@ export function Icon({ icon, className }: { icon: LucideIcon; className: string 
   return <Cmp className={className} strokeWidth={1.5} />
 }
 
-/** 9:16 slide thumbnail: real photo, legibility scrim, index numeral. */
+/** 9:16 slide thumbnail: real photo, legibility scrim, slide script text
+ * (index numeral only when no text is available, e.g. Auth demo thumbs).
+ * DESIGN.md §11.7 deviation: product cards show text, not numerals. */
 export function SlideThumb({
   image,
   index,
+  label,
+  labelSize = 'sm',
   className = '',
 }: {
   image?: string
   index: number
+  label?: string
+  labelSize?: 'sm' | 'lg'
   className?: string
 }) {
+  const labelClass = labelSize === 'lg' ? 'p-2 text-[9px] leading-snug' : 'p-1 text-[7px] leading-tight'
   return (
     <div className={`relative aspect-[9/16] shrink-0 overflow-hidden rounded-lg bg-[#0C0D10] ${className}`}>
       {image && <img src={image} alt={`Slide ${index}`} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />}
       <div className="absolute inset-0 bg-black/25" />
-      <span className="absolute inset-0 flex items-center justify-center font-num text-[9px] font-bold text-white/90 drop-shadow">
-        {index}
-      </span>
+      {label ? (
+        <>
+          {/* Legibility gradient, heavier at the bottom where the script sits. */}
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent" />
+          <span className="absolute inset-x-0 bottom-0 flex flex-col justify-end whitespace-pre-line">
+            <span className={`${labelClass} line-clamp-4 font-semibold text-white drop-shadow`}>{label}</span>
+          </span>
+        </>
+      ) : (
+        <span className="absolute inset-0 flex items-center justify-center font-num text-[9px] font-bold text-white/90 drop-shadow">
+          {index}
+        </span>
+      )}
     </div>
   )
 }
