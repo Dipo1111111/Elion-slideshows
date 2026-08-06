@@ -21,6 +21,7 @@ import {
   Wallet,
 } from 'lucide-react'
 import logoUrl from '@/assets/elion-logo.png'
+import { SlideThumb } from '@/components/primitives'
 
 const picsum = (seed: string, w: number, h: number) => `https://picsum.photos/seed/${seed}/${w}/${h}`
 
@@ -45,25 +46,6 @@ export function AppWindow({ children, className }: { children: ReactNode; classN
         <span aria-hidden className="h-5 w-5 rounded-full border border-[#3A3F47]" />
       </div>
       {children}
-    </div>
-  )
-}
-
-/* ---------- tiny slide thumb, real SlideThumb anatomy: photo, scrim, index ---------- */
-function SlideThumb({ seed, w, index }: { seed: string; w: number; index?: number }) {
-  const h = Math.round((w * 16) / 9)
-  return (
-    <div
-      className="relative aspect-[9/16] shrink-0 overflow-hidden rounded-[3px] bg-[#0C0D10]"
-      style={{ width: w }}
-    >
-      <img src={picsum(seed, w, h)} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
-      <div className="absolute inset-0 bg-black/25" />
-      {index != null && (
-        <span className="absolute inset-0 flex items-center justify-center font-num text-[8px] font-bold text-white/90 drop-shadow">
-          {index}
-        </span>
-      )}
     </div>
   )
 }
@@ -111,6 +93,7 @@ const CARDS = [
     meta: '9 slides · 2 min ago',
     status: 'Ready' as const,
     thumbs: ['elion-dash-a', 'elion-dash-b', 'elion-dash-c'],
+    slideText: ['3 morning habits that changed my energy', 'Not coffee. Not a cold shower.', 'Water before your phone.'],
     tags: ['habits', 'energy'],
   },
   {
@@ -120,6 +103,7 @@ const CARDS = [
     meta: '7 slides · 1 hour ago',
     status: 'Draft' as const,
     thumbs: ['elion-dash-d', 'elion-dash-e', 'elion-dash-f'],
+    slideText: ['Why most diets fail by week two', 'It is not about willpower.', 'Week two is where it falls apart.'],
     tags: ['nutrition', 'habits'],
   },
 ]
@@ -172,7 +156,7 @@ function DashboardCard({ card }: { card: (typeof CARDS)[number] }) {
     <div className="overflow-hidden rounded-lg border border-[#1E2028] bg-[#0C0D10]">
       <div className="flex items-center gap-1.5 bg-[#0C0D10] px-2 py-1.5">
         {card.thumbs.map((s, i) => (
-          <SlideThumb key={s} seed={s} w={32} index={i + 1} />
+          <SlideThumb key={s} image={picsum(s, 64, 114)} index={i + 1} label={card.slideText[i]} className="w-[32px]" />
         ))}
         <span className="ml-auto self-end pb-0.5 text-[6.5px] font-semibold text-[#7C838C]">
           +{card.status === 'Ready' ? 6 : 4} more
@@ -424,18 +408,13 @@ export function EditorPreview() {
   return (
     <div className="flex gap-4 px-4 py-4">
       <div className="flex shrink-0 flex-col items-center gap-2">
-        <div className="relative aspect-[9/16] w-[130px] overflow-hidden rounded-lg">
-          <img
-            src={picsum('elion-edit-main', 260, 462)}
-            alt=""
-            loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/20" />
-          <span className="absolute inset-0 flex items-center justify-center font-num text-[13px] font-bold text-white/90 drop-shadow">
-            2
-          </span>
-        </div>
+        <SlideThumb
+          image={picsum('elion-edit-main', 260, 462)}
+          index={2}
+          label={SLIDES[1].text}
+          labelSize="lg"
+          className="w-[130px]"
+        />
         <div className="flex items-center gap-2">
           <span className="flex h-5 w-5 items-center justify-center rounded-full border border-[#262834] bg-[#1E2026] text-white">
             <ChevronLeft className="h-3 w-3" strokeWidth={1.5} />

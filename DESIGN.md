@@ -455,9 +455,12 @@ text, Copy, Image) + Download all / Copy all text.
    Everything else in the Billing recipe is unchanged.
 7. **Slide thumbs show script text, not the index numeral.** The SlideThumb recipe pins a centered
    `font-num` numeral (user request 2026-08-06). Product cards (featured `w-24` + grid `w-12`) now
-   render the slide's script text bottom-anchored over the photo with the legibility gradient, same
-   anatomy as the editor phone preview: `text-[9px]` on featured thumbs, `text-[7px]` on grid thumbs,
-   `line-clamp-4`. The numeral is retained as the fallback wherever no text exists (Auth demo thumbs).
+   render the slide's script text centered over the photo: it wraps to at most two lines
+   (`max-h-[25px]` featured / `max-h-[18px]` grid, i.e. 2x line-height), and when the text would
+   overflow, the box scales down by the overflow ratio (floor 0.6) so every word stays visible with
+   no ellipsis (TikTok-safe, keeps the side padding).
+   Base sizes: `text-[9px]` featured, `text-[7px]` grid, same legibility scrim as the numeral. The
+   numeral is retained as the fallback wherever no text exists (Auth demo thumbs).
 
 Everything else: every color, size, radius, spacing, font, icon, hover state, transition, and copy
 string is fixed by this document. No restyling. No iteration on the look. Build it to look exactly

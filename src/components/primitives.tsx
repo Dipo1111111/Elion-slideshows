@@ -4,7 +4,7 @@
 // exactly. Token utilities are never substituted for a pinned value.
 
 import type { LucideIcon } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 
 export const FOCUS = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3B82F6]'
 
@@ -15,7 +15,9 @@ export function Icon({ icon, className }: { icon: LucideIcon; className: string 
 
 /** 9:16 slide thumbnail: real photo, legibility scrim, slide script text
  * (index numeral only when no text is available, e.g. Auth demo thumbs).
- * DESIGN.md §11.7 deviation: product cards show text, not numerals. */
+ * DESIGN.md §11.7 deviation: product cards show text, not numerals. Text wraps
+ * to at most two lines; if it would overflow, the box scales down by the
+ * overflow ratio so every word stays visible with no ellipsis. */
 export function SlideThumb({
   image,
   index,
@@ -29,19 +31,44 @@ export function SlideThumb({
   labelSize?: 'sm' | 'lg'
   className?: string
 }) {
-  const labelClass = labelSize === 'lg' ? 'p-2 text-[9px] leading-snug' : 'p-1 text-[7px] leading-tight'
+  const boxRef = useRef<HTMLSpanElement>(null)
+  const [fit, setFit] = useState(1)
+  // Two-line cap per size: 9px/1.375 and 7px/1.25 line-heights, doubled.
+  const labelClass =
+    labelSize === 'lg' ? 'max-h-[25px] text-[9px] leading-snug' : 'max-h-[18px] text-[7px] leading-tight'
+
+  useLayoutEffect(() => {
+    const measure = () => {
+      const node = boxRef.current
+      if (!node || !label) {
+        setFit(1)
+        return
+      }
+      // The box is capped at two lines. If the wrapped text is taller than
+      // that, shrink the box by the overflow ratio so the whole text fits in
+      // two lines instead of cutting off with an ellipsis.
+      setFit(node.scrollHeight > node.clientHeight ? Math.max(0.6, node.clientHeight / node.scrollHeight) : 1)
+    }
+    measure()
+    // Re-measure after first paint in case the font has not settled yet.
+    const raf = requestAnimationFrame(measure)
+    return () => cancelAnimationFrame(raf)
+  }, [label, labelSize])
+
   return (
     <div className={`relative aspect-[9/16] shrink-0 overflow-hidden rounded-lg bg-[#0C0D10] ${className}`}>
       {image && <img src={image} alt={`Slide ${index}`} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />}
       <div className="absolute inset-0 bg-black/25" />
       {label ? (
-        <>
-          {/* Legibility gradient, heavier at the bottom where the script sits. */}
-          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent" />
-          <span className="absolute inset-x-0 bottom-0 flex flex-col justify-end whitespace-pre-line">
-            <span className={`${labelClass} line-clamp-4 font-semibold text-white drop-shadow`}>{label}</span>
+        <span className="absolute inset-0 flex items-center justify-center px-1.5">
+          <span
+            ref={boxRef}
+            style={fit !== 1 ? { transform: `scale(${fit})` } : undefined}
+            className={`${labelClass} w-full max-h-[2lh] overflow-hidden text-center font-semibold text-white drop-shadow`}
+          >
+            {label}
           </span>
-        </>
+        </span>
       ) : (
         <span className="absolute inset-0 flex items-center justify-center font-num text-[9px] font-bold text-white/90 drop-shadow">
           {index}
