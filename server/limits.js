@@ -63,24 +63,43 @@ export async function assertCanGenerate(profile) {
 }
 
 // Increment counters on success only. Monthly window resets for paid plans.
+// Compare-and-swap: read the counters, then UPDATE only if they still match
+// what we read. Two concurrent generations from the same account would
+// otherwise both read N and both write N+1 (one increment lost, so a burst of
+// parallel requests could slip past a cap). The row lock Postgres takes on the
+// guarded UPDATE makes the check-and-set atomic; a stale guard means another
+// request incremented in between, so re-read and retry.
 export async function chargeGeneration(userId, plan) {
   const db = requireDb()
-  const { data: profile } = await db
-    .from('profiles')
-    .select('total_gens, monthly_gens, month_start')
-    .eq('id', userId)
-    .maybeSingle()
-  if (!profile) throw new HttpError(500, 'Profile not found.')
-  const now = new Date()
-  const ms = profile.month_start ? new Date(profile.month_start) : now
-  const reset = ms.getUTCFullYear() !== now.getUTCFullYear() || ms.getUTCMonth() !== now.getUTCMonth()
-  const patch = {
-    total_gens: (profile.total_gens || 0) + 1,
-    monthly_gens: plan !== 'free' ? (reset ? 1 : (profile.monthly_gens || 0) + 1) : profile.monthly_gens || 0,
-    month_start: plan !== 'free' && reset ? now.toISOString() : profile.month_start,
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const { data: profile, error: readErr } = await db
+      .from('profiles')
+      .select('total_gens, monthly_gens, month_start')
+      .eq('id', userId)
+      .maybeSingle()
+    if (readErr || !profile) throw new HttpError(500, 'Profile not found.')
+    const now = new Date()
+    const ms = new Date(profile.month_start)
+    const reset = plan !== 'free' && (ms.getUTCFullYear() !== now.getUTCFullYear() || ms.getUTCMonth() !== now.getUTCMonth())
+    const patch = {
+      total_gens: profile.total_gens + 1,
+      monthly_gens: reset ? 1 : profile.monthly_gens + (plan !== 'free' ? 1 : 0),
+      month_start: reset ? now.toISOString() : profile.month_start,
+    }
+    const { data: updated, error } = await db
+      .from('profiles')
+      .update(patch)
+      .eq('id', userId)
+      .eq('total_gens', profile.total_gens)
+      .eq('monthly_gens', profile.monthly_gens)
+      .eq('month_start', profile.month_start)
+      .select('id')
+      .maybeSingle()
+    if (error) throw new HttpError(500, 'Could not update usage.')
+    if (updated) return
+    // Guard failed: counters moved under us. Loop re-reads fresh values.
   }
-  const { error } = await db.from('profiles').update(patch).eq('id', userId)
-  if (error) throw new HttpError(500, 'Could not update usage.')
+  throw new HttpError(500, 'Could not update usage.')
 }
 
 export async function canCreateProject(userId, plan) {

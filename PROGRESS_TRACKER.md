@@ -171,17 +171,17 @@
 
 ## Phase 11 — Security hardening (before launch)
 
-- [ ] Secrets: keys live only in server env; `VITE_` prefix audit confirms nothing secret ships to the client bundle
-- [ ] Supabase: anon key restricted to auth + RLS; service-role key never client-side; RLS reviewed per table (profiles own-row, projects own, queue own)
-- [ ] Auth: server verifies access tokens on every `/api` route via GoTrue `/auth/v1/user` (algorithm-agnostic; project tokens are ES256 after Supabase key migration) with optional HS256 fast path if `SUPABASE_JWT_SECRET` set; session expiry + refresh handled
-- [ ] Rate limiting: 10 gens/hr/user enforced at the API route (not client-gated); brute-force protection on auth endpoints
-- [ ] Input validation: whitelist body fields (brain, queue edits, project renames); reject unknown keys; length caps on all strings
-- [ ] Webhook: Lemon Squeezy HMAC verified; webhook handler idempotent; secret never logged
-- [ ] HTTP: security headers, strict CORS allowlist, no CORS on `/api/lemon/webhook`, referrer policy
-- [ ] Outbound safety: OpenCode/Apify responses length-capped; image URLs validated HTTPS-only; no SSRF (Pinterest queries are platform-chosen, not raw user input)
-- [ ] Logging: no PII, tokens, or keys in logs; structured and redacted
-- [ ] Deps: `npm audit` clean or known-and-accepted; lockfile pinned
-- [ ] Abuse: usage counters race-safe (server-side, transactional); cap enforcement server-side
+- [x] Secrets: keys live only in server env; `VITE_` prefix audit confirms nothing secret ships to the client bundle (only `VITE_SUPABASE_URL` + anon key, which is public-by-design and RLS-restricted) — DONE 2026-08-06
+- [x] Supabase: anon key restricted to auth + RLS; service-role key never client-side; RLS reviewed per table (profiles own-row, projects own, queue own) — DONE 2026-08-06
+- [x] Auth: server verifies access tokens on every `/api` route via GoTrue `/auth/v1/user` (algorithm-agnostic; project tokens are ES256 after Supabase key migration) with optional HS256 fast path if `SUPABASE_JWT_SECRET` set; session expiry + refresh handled — DONE (verified pre-existing)
+- [x] Rate limiting: 10 gens/hr/user enforced at the API route (not client-gated); brute-force protection on auth endpoints (auth is GoTrue-side) — DONE (verified pre-existing)
+- [x] Input validation: whitelist body fields (brain, queue edits, project renames); reject unknown keys; length caps on all strings — DONE 2026-08-06 (added caps on library pull searches + LLM-expanded queries)
+- [x] Webhook: Lemon Squeezy HMAC verified; webhook handler idempotent; secret never logged — DONE (verified pre-existing)
+- [x] HTTP: security headers, strict CORS allowlist, no CORS on `/api/lemon/webhook`, referrer policy — DONE 2026-08-06 (nosniff, X-Frame-Options DENY, no-referrer, COOP/CORP same-origin, Permissions-Policy; Origin allowlist rejects unknown-origin browser requests; webhook is server-to-server, no Origin)
+- [x] Outbound safety: OpenCode/Apify responses length-capped; image URLs validated HTTPS-only; no SSRF (Pinterest queries are platform-chosen, not raw user input) — DONE 2026-08-06 (pinimg.com host gate on every pulled URL)
+- [x] Logging: no PII, tokens, or keys in logs; structured and redacted — DONE (swept 2026-08-06, clean)
+- [x] Deps: `npm audit` clean or known-and-accepted; lockfile pinned — DONE 2026-08-06 (hono ReDoS patched 4.12.33→4.13.0; react-router 7.18.2 RSC-mode CSRF advisory ACCEPTED: SPA has no RSC/action mode, vector unreachable, fix requires major v8 migration)
+- [x] Abuse: usage counters race-safe (server-side, transactional); cap enforcement server-side — DONE 2026-08-06 (chargeGeneration now compare-and-swap guarded UPDATE, retries on stale read)
 
 ---
 

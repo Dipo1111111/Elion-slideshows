@@ -35,13 +35,20 @@ const IMG_FETCH_HEADERS = {
 }
 
 // "dark moody, cozy bedroom" → ["dark moody", "cozy bedroom"]. A comma list of
-// phrases; each phrase may contain spaces.
+// phrases; each phrase may contain spaces. Capped so a huge string can't be
+// forwarded verbatim into the Apify actor input or name a giant pack.
+const MAX_QUERIES = 6
+const MAX_QUERY_LEN = 60
 function splitSearches(input) {
-  if (Array.isArray(input)) return input.map((s) => String(s).trim()).filter(Boolean)
-  return String(input || '')
-    .split(',')
-    .map((s) => s.trim())
+  const list = Array.isArray(input)
+    ? input.map((s) => String(s).trim())
+    : String(input || '')
+        .split(',')
+        .map((s) => s.trim())
+  return list
+    .map((s) => s.slice(0, MAX_QUERY_LEN))
     .filter(Boolean)
+    .slice(0, MAX_QUERIES)
 }
 
 // Pull usable image URLs out of whatever the Apify actor returns. The actor
@@ -54,6 +61,10 @@ function extractPinUrls(items) {
   const seen = new Set()
   const push = (raw) => {
     const u = String(raw).replace(/&amp;/g, '&').replace(/\\\//g, '/')
+    // Only Pinterest's image CDN is ever fetched, whatever the actor returns:
+    // pins are always served from pinimg.com, so anything else is dropped here
+    // (defense in depth against a compromised or malformed actor response).
+    if (!/^https:\/\/([a-z0-9-]+\.)*pinimg\.com\//i.test(u)) return
     if (!/\.(jpe?g|png|webp)(\?|$)/i.test(u)) return
     const name = (u.split('/').pop() || '').split('?')[0]
     if (!name || seen.has(name)) return
@@ -247,7 +258,7 @@ async function expandSearches(queries, niche) {
     try {
       const parsed = await chatJSON({ system, user, maxTokens: 300 })
       const out = Array.isArray(parsed?.searches)
-        ? parsed.searches.map((s) => String(s).trim()).filter(Boolean).slice(0, 6)
+        ? parsed.searches.map((s) => String(s).trim().slice(0, MAX_QUERY_LEN)).filter(Boolean).slice(0, MAX_QUERIES)
         : []
       if (out.length) return out
     } catch {

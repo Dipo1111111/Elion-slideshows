@@ -29,6 +29,36 @@ const HOST = process.env.HOST || '0.0.0.0'
 const DIST = join(__dirname, '..', 'dist')
 
 const app = express()
+
+// Security headers, applied before any body parsing. The API is same-origin
+// (prod serves the built UI, dev proxies /api through Vite), so these can be
+// strict: no frame embedding, no referrer leakage, nosniff. HSTS is skipped
+// deliberately (one-way commitment; Render already upgrades to HTTPS).
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'DENY')
+  res.setHeader('Referrer-Policy', 'no-referrer')
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin')
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()')
+  next()
+})
+
+// Strict CORS: deny any browser request from an origin we don't know. There is
+// no cross-origin consumer of this API, so a request carrying an unlisted
+// Origin header is hostile. The Lemon Squeezy webhook is server-to-server and
+// never sends an Origin header, so it passes through untouched.
+const ALLOWED_ORIGINS = new Set(
+  [process.env.APP_URL, 'http://localhost:5173', 'http://localhost:8787', 'http://127.0.0.1:5173', 'http://127.0.0.1:8787'].filter(Boolean),
+)
+app.use((req, res, next) => {
+  const origin = req.headers.origin
+  if (origin && !ALLOWED_ORIGINS.has(origin)) {
+    return res.status(403).json({ error: 'Cross-origin request denied.' })
+  }
+  next()
+})
+
 app.use(
   express.json({
     limit: '50mb',
