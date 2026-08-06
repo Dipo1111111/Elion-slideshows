@@ -1,6 +1,6 @@
-# BUILD_PLAN — Elion (clean-room carousel SaaS)
+# BUILD_PLAN — Elion (clean-room slideshow SaaS)
 
-Name locked: **Elion** ("Elion AI"). Folder: `C:\Users\USER\Documents\elion`. Core value: **"Writes your carousel for you."**
+Name locked: **Elion** ("Elion AI"). Folder: `C:\Users\USER\Documents\elion`. Core value: **"Writes your slideshow for you."**
 
 This is the single source of truth for the implementation. Follow `PROGRESS_TRACKER.md` for ordering; this doc has the how.
 Source of truth for *what* the product is: `PRD.md`. Reconcile any disagreement against the PRD, then fix this doc.
@@ -125,7 +125,7 @@ Authed:
 
 ## 8. Generation (`server/generate.js` + `server/openrouter.js` + `server/images.js`)
 
-**Prompt** (freshly authored — do NOT copy SlideSmith's): system context includes the active project's Brain fields (niche, appName, appDescription, audience, styleMemory) and rules: short-form TikTok/IG carousel, hook max ~8 words scroll-stopper on slide 1, 5–6 slides, max ~8 words each, last slide = CTA ("Save this"), caption with 1–2 emoji, 3 hashtags, one-line rationale tied to the style memory. Ask for N carousels as JSON `{ "slideshows": [{hook, slides[], caption, hashtags[], rationale}] }`.
+**Prompt** (freshly authored — do NOT copy SlideSmith's): system context includes the active project's Brain fields (niche, appName, appDescription, audience, styleMemory) and rules: short-form TikTok/IG slideshow, hook max ~8 words scroll-stopper on slide 1, 5–6 slides, max ~8 words each, last slide = CTA ("Save this"), caption with 1–2 emoji, 3 hashtags, one-line rationale tied to the style memory. Ask for N slideshows as JSON `{ "slideshows": [{hook, slides[], caption, hashtags[], rationale}] }`.
 
 **Call:** OpenAI-compatible `/chat/completions` against **OpenCode Zen** (retires OpenRouter, locked 2026-08-05): base URL `OPENCODE_BASE_URL` (default `https://opencode.ai/zen/v1`), `Authorization: Bearer <OPENCODE_API_KEY>`, `model: OPENCODE_MODEL` = **`big-pickle`** (the free model, verified live), `max_tokens: 6000`, `response_format: { type: 'json_object' }`.
 
@@ -178,7 +178,7 @@ Caps live behind a config object (`LIMITS`) so the real numbers are set before l
 ## 13. Frontend
 
 Routes (react-router):
-- `/` **Landing** — hero "Writes your carousel for you", product blurb, pricing (Free / Creator $19/mo or $190/yr / Studio $49/mo or $490/yr), email signup, login link. Dark, on the Synthover palette.
+- `/` **Landing** — hero "Writes your slideshow for you", product blurb, pricing (Free / Creator $19/mo or $190/yr / Studio $49/mo or $490/yr), email signup, login link. Dark, on the Synthover palette.
 - `/auth` **Auth** — sign up / sign in forms (mode toggle) using Supabase; on success → `/app`.
 - `/app` **AppShell** — protected (redirect to `/auth` if no session). Pinned sidebar matching the locked Synthover design: wordmark (real logo) · **Generate** (nav-style white row) · **Dashboard** · **Library** · **Brand Voice** · **Plan & Billing** · pinned bottom: free-plan widget (status + meter + Upgrade link), **Settings** · **Sign out** · account block. Active nav = text + icon turn blue, no bg.
   - **DashboardView** — empty state (new user) → skeleton loader (generating) → image-backed cards. Cards: slide-thumb filmstrip, status badge (Draft / Ready / Exported), hook, caption clamp, hashtag pills, Edit / Export / Delete. "Generate" opens the GenerateModal (count 1/3/5/10) → `POST /api/generate`. Error banners for 403/429 with upgrade CTA.

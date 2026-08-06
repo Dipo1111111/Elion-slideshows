@@ -32,7 +32,7 @@ The exploration approach = read the specific skill files (`/impeccable` + `/ui-u
 ## Open items
 
 - `elion.ai` domain availability check — verification method to be agreed (user rejected Bash RDAP + WebFetch-whois before). Non-blocking.
-- Trademark clearance for "Elion" in the content-creation / carousel software category (Elion Health, an "Elion AI" agents platform, ELION voice agents, and elion.media exist in other categories).
+- Trademark clearance for "Elion" in the content-creation / slideshow software category (Elion Health, an "Elion AI" agents platform, ELION voice agents, and elion.media exist in other categories).
 
 ## Context files in this folder
 

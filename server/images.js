@@ -145,7 +145,7 @@ export async function removeImage({ userId, projectId, imageId }) {
 // backgrounds are pulled first in the Library (a visible step with clear
 // feedback), then reused across every slideshow. When `packs` names a
 // selection, only those packs are drawn from. Prefers an image not yet used
-// in the same slideshow so a carousel never repeats a background.
+// in the same slideshow so a slideshow never repeats a background.
 export async function assignBackgrounds({ userId, projectId, slideshows, packs }) {
   const project = await getProject(userId, projectId)
   if (!project) throw new HttpError(404, 'Project not found.')

@@ -24,7 +24,7 @@ const DOCS: Record<string, Doc> = {
       {
         heading: '1. Agreement',
         body: [
-          `These Terms of Service govern your use of ${BRAND_NAME} ("the Service"), a slideshow generator that writes carousel scripts, sources background images, and exports ready-to-post slides. By creating an account or using the Service, you agree to these Terms.`,
+          `These Terms of Service govern your use of ${BRAND_NAME} ("the Service"), a slideshow generator that writes slideshow scripts, sources background images, and exports ready-to-post slides. By creating an account or using the Service, you agree to these Terms.`,
           `If you do not agree, do not use the Service. We may update these Terms from time to time; the latest version always appears on this page.`,
         ],
       },

@@ -1,6 +1,6 @@
 // Editor Export tab: background-only PNGs + copyable slide text, added in
 // TikTok's native font. Free plan bakes the watermark into each export. A
-// "Send to your phone" share snapshots the finished carousel to a QR link so
+// "Send to your phone" share snapshots the finished slideshow to a QR link so
 // the creator can post straight from the TikTok app.
 import { useState } from 'react'
 import QRCode from 'qrcode'

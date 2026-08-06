@@ -100,7 +100,7 @@ export function SlideshowEditorModal({
     const used = new Set<string>()
     patch({
       slides: draft.slides.map((s) => {
-        // Prefer a background not yet used in this carousel; fall back to any
+        // Prefer a background not yet used in this slideshow; fall back to any
         // remaining when the pool runs out, so a repeat never loops forever.
         const fresh = source.find((e) => !used.has(e.id))
         const entry = fresh ?? source[Math.floor(Math.random() * source.length)]

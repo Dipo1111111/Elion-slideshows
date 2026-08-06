@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Elion AI — your story, told in your voice. Carousel slideshow generator for solo creators.",
+  "description": "Elion AI — your story, told in your voice. Slideshow generator for solo creators.",
   "scripts": {
     "dev": "concurrently -k -n web,api -c cyan,magenta \"vite\" \"node --watch server/index.js\"",
     "server": "node --watch server/index.js",

@@ -1,7 +1,7 @@
 // Editor Slides tab: per-slide text, delete, background override strip.
 // DESIGN.md EditorModal recipe, amended to match the reference editor: the
 // grid filters by pack (All / one pull), shows the whole filtered pool, and
-// Shuffle picks a fresh background per slide so a carousel never repeats.
+// Shuffle picks a fresh background per slide so a slideshow never repeats.
 import { useMemo, useState } from 'react'
 import { Images, Shuffle, Trash2 } from 'lucide-react'
 import { imageUrl } from '@/lib/api'

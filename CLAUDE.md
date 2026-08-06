@@ -2,9 +2,9 @@
 
 ## What this is
 
-**Elion** ("Elion AI") is a hosted, multi-tenant **carousel slideshow generator** for solo TikTok/Instagram creators.
-Core value: **"Writes your carousel for you."** A creator sets up a **Brain** (niche, audience, style memory), the AI
-writes carousel scripts in that voice, they review/edit, then export 1080×1920 PNG backgrounds + copyable text to post
+**Elion** ("Elion AI") is a hosted, multi-tenant **slideshow generator** for solo TikTok/Instagram creators.
+Core value: **"Writes your slideshow for you."** A creator sets up a **Brain** (niche, audience, style memory), the AI
+writes slideshow scripts in that voice, they review/edit, then export 1080×1920 PNG backgrounds + copyable text to post
 manually in TikTok's native font.
 
 ## Clean-room law (non-negotiable)
@@ -91,6 +91,7 @@ Env vars (see `.env.example`): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUP
 
 - Build order comes from `PROGRESS_TRACKER.md` — work phases in order, tick boxes as you go.
 - **No em dashes in UI copy.** Every user-facing string (buttons, captions, empty states, errors, landing copy) uses periods, commas, or colons instead of "—". Standing user rule; do not reintroduce em dashes.
+- **Slideshows, never carousels.** The output is always a slideshow / slides. "Carousel" is banned from user-facing copy AND from code comments and docs; say "slideshow" instead. Standing user rule; do not reintroduce it.
 - UI components come from **shadcn/ui** — never hand-roll buttons/cards/dialogs.
 - **No ad-hoc UI styling.** The visual design comes from the locked Synthover design, pinned verbatim in
   `DESIGN.md` and extracted into global CSS + theme tokens (`src/index.css`). Do not invent a design during

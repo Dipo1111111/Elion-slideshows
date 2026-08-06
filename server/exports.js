@@ -120,7 +120,7 @@ function sharePage(meta) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#08080A">
-<title>Your carousel is ready</title>
+<title>Your slideshow is ready</title>
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; }
@@ -147,7 +147,7 @@ function sharePage(meta) {
 <main>
   <header>
     <h1>Elion</h1>
-    <p>Your carousel is ready. Copy the text, save the images, then post in TikTok.</p>
+    <p>Your slideshow is ready. Copy the text, save the images, then post in TikTok.</p>
   </header>
 
   <div class="block">

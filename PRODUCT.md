@@ -6,7 +6,7 @@ product
 
 ## Users
 
-Solo TikTok and Instagram creators who post carousel **slideshows** — the person who is
+Solo TikTok and Instagram creators who post **slideshows** — the person who is
 scrolling, thinks "that could be a post", and needs it *now*: hook, slides, caption,
 hashtags, exportable backgrounds. They work on phones and post in the native app. They are
 fast-moving, impatient with fluff, allergic to hype-speak, and usually posting on a

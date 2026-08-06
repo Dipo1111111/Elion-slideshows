@@ -226,7 +226,7 @@ function Sidebar({
         <div className="rounded-xl border border-[#20222B] bg-transparent p-3.5">
           <p className="text-[12px] font-bold text-white">Powered by Elion Pro</p>
           <p className="mt-1.5 text-[11px] leading-relaxed text-[#8E8E93]">
-            Your Elion account is synced with active brand memory, giving you full access for managing and scaling your carousels.
+            Your Elion account is synced with active brand memory, giving you full access for managing and scaling your slideshows.
           </p>
           <button
             onClick={() => onSelect('billing')}

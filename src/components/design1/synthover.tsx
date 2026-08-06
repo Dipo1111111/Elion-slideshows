@@ -496,7 +496,7 @@ function LoadingView() {
       <div className="mb-4">
         <h2 className="font-display text-[16px] font-bold text-white">Your slideshows</h2>
         <p className="mt-1 text-[12px] font-medium text-[#9CA0A8]">
-          Writing 3 carousels for Daily Grind...
+          Writing 3 slideshows for Daily Grind...
         </p>
       </div>
 

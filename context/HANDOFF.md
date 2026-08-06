@@ -17,10 +17,10 @@
 
 ## Project: Elion
 
-**Elion** ("Elion AI") = hosted, clean-room, feature-for-feature rebuild of SlideSmith for solo TikTok/Instagram carousel slideshow creators. SlideSmith (`Documents\slideshow gen software\SlideSmith`) is feature reference ONLY, never copy source code, prompts, or images (PolyForm Noncommercial, cannot be sold).
+**Elion** ("Elion AI") = hosted, clean-room, feature-for-feature rebuild of SlideSmith for solo TikTok/Instagram slideshow creators. SlideSmith (`Documents\slideshow gen software\SlideSmith`) is feature reference ONLY, never copy source code, prompts, or images (PolyForm Noncommercial, cannot be sold).
 
 ### Core value
-"Writes your carousel for you." Creator sets up a Brain → AI writes slideshow script → review/edit → export 1080x1920 PNG backgrounds + copyable text → post manually in the native app.
+"Writes your slideshow for you." Creator sets up a Brain → AI writes slideshow script → review/edit → export 1080x1920 PNG backgrounds + copyable text → post manually in the native app.
 
 ### Locked decisions (DO NOT RE-ASK)
 - **Design:** Synthover is the locked winner. **`DESIGN.md` (repo root) is the binding UI contract**: it pins EVERY value and component recipe verbatim. Build to it 1:1, no restyling, no iteration on the look; the only deviations are DESIGN.md §11. Black/blue/white ONLY. Page black `#08080A`. Containers = transparent + hairline border (never filled, no navy). One accent blue `#3B82F6` as translucent glass (`/20` fills, never solid except tiny data marks). Modals = the only elevated layer. No amber, no purple, no navy.
